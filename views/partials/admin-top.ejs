@@ -1,0 +1,39 @@
+<%- include('header', { bare: true }) %>
+<%
+  const nav = [
+    { key: 'overview', href: '/admin', icon: 'fa-gauge-high', label: 'Overview' },
+    { key: 'tasks', href: '/admin/tasks', icon: 'fa-list-check', label: 'Needs attention' },
+    { key: 'programs', href: '/admin/programs', icon: 'fa-book-open', label: 'Programs' },
+    { key: 'slides', href: '/admin/slides', icon: 'fa-images', label: 'Homepage banners', perm: 'slides.manage' },
+    { key: 'users', href: '/admin/users', icon: 'fa-users', label: 'Users', perm: 'users.view' },
+    { key: 'payments', href: '/admin/payments', icon: 'fa-credit-card', label: 'Payments', perm: 'payments.view' },
+    { key: 'roles', href: '/admin/roles', icon: 'fa-user-shield', label: 'Roles', perm: 'roles.manage' },
+    { key: 'settings', href: '/admin/settings', icon: 'fa-sliders', label: 'Settings', perm: 'settings.manage' },
+    { key: 'audit', href: '/admin/audit', icon: 'fa-clock-rotate-left', label: 'Audit log', perm: 'audit.view' }
+  ].filter(function (i) { return !i.perm || can(i.perm); });
+%>
+<div class="flex min-h-[calc(100vh-0px)] flex-col lg:flex-row">
+  <aside class="bg-ink text-slate-300 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:shrink-0">
+    <div class="flex items-center justify-between gap-3 px-5 py-4 lg:block">
+      <a href="/" class="flex items-center gap-2.5">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-sun"><i class="fa-solid fa-graduation-cap"></i></span>
+        <span class="font-display text-base font-extrabold text-white">TSA Admin</span>
+      </a>
+    </div>
+    <nav class="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible lg:pb-0" aria-label="Admin">
+      <% nav.forEach(function (i) { %>
+      <a href="<%= i.href %>" class="admin-link <%= active === i.key ? 'is-active' : '' %>" <%= active === i.key ? 'aria-current=page' : '' %>>
+        <i class="fa-solid <%= i.icon %> w-5 text-center"></i><span class="whitespace-nowrap"><%= i.label %></span>
+      </a>
+      <% }) %>
+    </nav>
+    <div class="hidden border-t border-white/10 px-5 py-4 text-xs lg:absolute lg:bottom-0 lg:left-0 lg:right-0 lg:block">
+      <p class="truncate font-semibold text-white"><%= currentUser.name %></p>
+      <p class="truncate text-slate-400"><%= currentUser.Role ? currentUser.Role.name : 'Student' %></p>
+      <div class="mt-3 flex gap-3">
+        <a class="hover:text-white" href="/dashboard">My dashboard</a>
+        <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="hover:text-white">Sign out</button></form>
+      </div>
+    </div>
+  </aside>
+  <div class="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">

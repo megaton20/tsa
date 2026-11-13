@@ -1,0 +1,42 @@
+<%- include('../../partials/admin-top') %>
+<a href="/admin/programs/<%= program.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= program.title %></a>
+<h1 class="mt-2 font-display text-3xl font-extrabold text-ink">Team</h1>
+<p class="mt-1 max-w-2xl text-sm text-slate-600">People here only see and manage this program. The same person can be added to several programs. They need an account first.</p>
+
+<div class="panel mt-6 overflow-x-auto">
+  <table class="w-full min-w-[560px] text-left text-sm">
+    <thead class="border-b border-slate-200 text-xs font-semibold text-slate-500"><tr><th class="px-4 py-3">Person</th><th class="px-4 py-3">Role</th><th class="px-4 py-3"></th></tr></thead>
+    <tbody class="divide-y divide-slate-100">
+      <% staff.forEach(function (s) { %>
+      <tr>
+        <td class="px-4 py-3"><p class="font-semibold text-ink"><%= s.User.name %></p><p class="text-xs text-slate-500"><%= s.User.email %></p></td>
+        <td class="px-4 py-3"><%= s.Role.name %></td>
+        <td class="px-4 py-3 text-right">
+          <form method="post" action="/admin/programs/<%= program.id %>/team/<%= s.id %>/remove" data-confirm="Remove <%= s.User.name %> from this program?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm">Remove</button></form>
+        </td>
+      </tr>
+      <% }) %>
+      <% if (!staff.length) { %><tr><td colspan="3" class="px-4 py-10 text-center text-slate-500">Nobody yet.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+
+<section class="panel mt-6 max-w-2xl p-6">
+  <h2 class="font-bold text-ink">Add someone</h2>
+  <form method="post" action="/admin/programs/<%= program.id %>/team" class="mt-4 grid gap-4 sm:grid-cols-2">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="sm:col-span-2">
+      <label class="label" for="email">Their account email</label>
+      <input class="field" id="email" name="email" type="email" required>
+    </div>
+    <div class="sm:col-span-2">
+      <label class="label" for="roleId">Role</label>
+      <select class="field" id="roleId" name="roleId" required>
+        <% roles.forEach(function (r) { %><option value="<%= r.id %>"><%= r.name %><%= r.description ? ' \u2013 ' + r.description : '' %></option><% }) %>
+      </select>
+      <p class="hint">You can only assign roles whose permissions you already have. Adding someone again changes their role.</p>
+    </div>
+    <div><button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i>Add to team</button></div>
+  </form>
+</section>
+<%- include('../../partials/admin-bottom') %>

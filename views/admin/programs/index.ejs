@@ -1,0 +1,39 @@
+<%- include('../../partials/admin-top') %>
+<div class="flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="font-display text-3xl font-extrabold text-ink">Programs</h1>
+    <p class="mt-1 text-sm text-slate-600"><%= can('programs.manage') ? 'Every program on the platform.' : 'The programs you are assigned to.' %></p>
+  </div>
+  <% if (can('programs.manage')) { %><a href="/admin/programs/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i>New program</a><% } %>
+</div>
+
+<% if (!items.length) { %>
+<div class="panel mt-6 px-6 py-14 text-center">
+  <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand"><i class="fa-solid fa-book-open"></i></span>
+  <p class="mt-3 font-semibold text-ink">No programs yet</p>
+  <p class="mx-auto mt-1 max-w-sm text-sm text-slate-600"><%= can('programs.manage') ? 'Create a program, appoint its manager, then add a cohort.' : 'An admin can add you to a program from its Team page.' %></p>
+</div>
+<% } else { %>
+<div class="panel mt-6 overflow-x-auto">
+  <table class="w-full min-w-[760px] text-left text-sm">
+    <thead class="border-b border-slate-200 text-xs font-semibold text-slate-500">
+      <tr><th class="px-4 py-3">Program</th><th class="px-4 py-3">Manager</th><th class="px-4 py-3">Cohorts</th><th class="px-4 py-3">Students</th><th class="px-4 py-3">To review</th></tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      <% items.forEach(function (i) { %>
+      <tr>
+        <td class="px-4 py-3">
+          <a class="font-semibold text-ink hover:text-brand" href="/admin/programs/<%= i.program.id %>"><%= i.program.title %></a>
+          <p class="mt-0.5"><span class="badge <%= labels.program[i.program.status].tone %>"><%= labels.program[i.program.status].text %></span></p>
+        </td>
+        <td class="px-4 py-3 text-slate-600"><%= i.managers.length ? i.managers.map(function (m) { return m.name; }).join(', ') : 'No manager yet' %></td>
+        <td class="px-4 py-3"><%= i.cohorts %> <span class="text-xs text-slate-500">(<%= i.open %> open)</span></td>
+        <td class="px-4 py-3"><%= i.students %></td>
+        <td class="px-4 py-3"><% if (i.pending) { %><span class="badge bg-amber-50 text-amber-700"><%= i.pending %></span><% } else { %><span class="text-slate-400">None</span><% } %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+<%- include('../../partials/admin-bottom') %>

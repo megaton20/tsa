@@ -1,0 +1,16 @@
+<dialog data-community-modal data-delay="2500" class="w-[calc(100%-2rem)] max-w-md rounded-2xl p-0 shadow-2xl backdrop:bg-ink/60" aria-labelledby="community-title">
+  <div class="p-6 sm:p-7">
+    <div class="flex items-start justify-between gap-4">
+      <span class="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-2xl text-emerald-600"><i class="fa-brands fa-whatsapp"></i></span>
+      <button type="button" data-community-close class="grid h-9 w-9 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <h2 id="community-title" class="mt-4 font-display text-2xl font-extrabold text-ink">Join the True Series community</h2>
+    <p class="mt-2 text-sm leading-relaxed text-slate-600">New cohorts, session reminders and announcements go out here first. Join so you do not miss a start date.</p>
+    <div class="mt-5 grid gap-2.5">
+      <% if (settings.whatsappChannelUrl) { %><a data-community-link href="<%= settings.whatsappChannelUrl %>" target="_blank" rel="noopener" class="btn btn-whatsapp justify-center"><i class="fa-brands fa-whatsapp"></i>Join the WhatsApp channel</a><% } %>
+      <% if (settings.whatsappGroupUrl) { %><a data-community-link href="<%= settings.whatsappGroupUrl %>" target="_blank" rel="noopener" class="btn btn-ghost justify-center"><i class="fa-solid fa-user-group"></i>Join the WhatsApp group</a><% } %>
+      <% if (settings.telegramUrl) { %><a data-community-link href="<%= settings.telegramUrl %>" target="_blank" rel="noopener" class="btn btn-ghost justify-center"><i class="fa-brands fa-telegram"></i>Join on Telegram</a><% } %>
+    </div>
+    <button type="button" data-community-close class="mt-4 w-full text-center text-sm font-semibold text-slate-500 hover:text-slate-800">Maybe later</button>
+  </div>
+</dialog>

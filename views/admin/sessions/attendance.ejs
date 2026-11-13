@@ -1,0 +1,64 @@
+<%- include('../../partials/admin-top') %>
+<a href="/admin/cohorts/<%= cohort.id %>/sessions" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i>Sessions</a>
+<div class="mt-2 flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <h1 class="font-display text-3xl font-extrabold text-ink"><%= sessionRow.title %></h1>
+    <p class="mt-1 text-sm text-slate-600"><%= fmtWhen(sessionRow.startsAt) %> &middot; <%= program.title %> &middot; <%= cohort.name %></p>
+  </div>
+  <% if (sessionRow.meetLink && canP('sessions.manage')) { %><a class="btn btn-primary btn-sm" href="<%= sessionRow.meetLink %>" target="_blank" rel="noopener"><i class="fa-solid fa-video"></i>Open the meeting</a><% } %>
+</div>
+
+<div <%- live ? 'data-autorefresh="30"' : '' %>>
+<dl class="panel mt-6 grid divide-y divide-slate-200 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+  <div class="px-5 py-4"><dd class="font-display text-2xl font-extrabold text-ink"><%= joined %></dd><dt class="text-xs font-semibold text-slate-500">Pressed Join</dt></div>
+  <div class="px-5 py-4"><dd class="font-display text-2xl font-extrabold text-ink"><%= total %></dd><dt class="text-xs font-semibold text-slate-500">Enrolled</dt></div>
+  <div class="px-5 py-4"><dd class="font-display text-2xl font-extrabold text-ink"><%= total ? Math.round(joined / total * 100) : 0 %>%</dd><dt class="text-xs font-semibold text-slate-500">Turnout</dt></div>
+</dl>
+<p class="mt-3 flex gap-2 text-sm text-slate-600"><i class="fa-solid fa-circle-info mt-0.5 text-brand"></i><span>Only people on this list should be let into the meeting. Match the names and emails below with who is waiting.<%= live ? ' This page refreshes by itself while the session is live.' : '' %></span></p>
+
+<form method="get" class="mt-4 flex gap-3">
+  <input class="field max-w-xs" name="q" value="<%= q %>" placeholder="Search name or email" aria-label="Search students">
+  <button class="btn btn-ghost"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
+  <% if (q) { %><a href="?" class="btn btn-ghost">Clear</a><% } %>
+</form>
+
+<div class="panel mt-4 overflow-x-auto">
+  <table class="w-full min-w-[680px] text-left text-sm">
+    <thead class="border-b border-slate-200 text-xs font-semibold text-slate-500"><tr><th class="px-4 py-3">Student</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">By hand</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">
+      <% rows.forEach(function (r) { const m = r.mark; %>
+      <tr>
+        <td class="px-4 py-3"><p class="font-semibold text-ink"><%= r.user.name %></p><p class="text-xs text-slate-500"><%= r.user.email %></p><% if (r.enrollment.status === 'suspended') { %><span class="badge mt-1 bg-rose-50 text-rose-700">Suspended</span><% } %></td>
+        <td class="px-4 py-3">
+          <% if (m) { %>
+            <span class="badge bg-emerald-50 text-emerald-700"><i class="fa-solid fa-check"></i><%= m.method === 'manual' ? 'Marked present' : 'Joined' %></span>
+            <p class="mt-1 text-xs text-slate-500"><%= fmtWhen(m.firstJoinedAt || m.createdAt) %><%= m.method === 'join' && m.joinCount > 1 ? ' \u00b7 pressed Join ' + m.joinCount + ' times' : '' %></p>
+            <% if (m.note) { %><p class="mt-1 text-xs text-slate-500">Reason: <%= m.note %></p><% } %>
+          <% } else { %><span class="badge bg-slate-100 text-slate-600">Not joined</span><% } %>
+        </td>
+        <td class="px-4 py-3">
+          <% if (canP('attendance.manage')) { %>
+            <div class="flex justify-end">
+            <% if (m && m.method === 'manual') { %>
+              <form method="post" action="/admin/sessions/<%= sessionRow.id %>/attendance/mark"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="userId" value="<%= r.user.id %>"><input type="hidden" name="action" value="clear"><button class="btn btn-ghost btn-sm">Remove mark</button></form>
+            <% } else if (!m) { %>
+              <details class="w-60 text-left">
+                <summary class="btn btn-ghost btn-sm cursor-pointer">Mark present</summary>
+                <form method="post" action="/admin/sessions/<%= sessionRow.id %>/attendance/mark" class="mt-2 space-y-2">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="userId" value="<%= r.user.id %>"><input type="hidden" name="action" value="present">
+                  <input class="field py-1.5 text-sm" name="note" maxlength="255" placeholder="Reason, e.g. link problem" aria-label="Reason" required>
+                  <button class="btn btn-primary btn-sm">Save</button>
+                </form>
+              </details>
+            <% } %>
+            </div>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+      <% if (!rows.length) { %><tr><td colspan="3" class="px-4 py-10 text-center text-slate-500">No students match.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+</div>
+<%- include('../../partials/admin-bottom') %>

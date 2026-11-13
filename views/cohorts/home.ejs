@@ -1,0 +1,106 @@
+<%- include('../partials/header') %>
+<section class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+  <a href="/dashboard" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i>Dashboard</a>
+  <div class="mt-3 flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="font-display text-3xl font-extrabold text-ink"><%= cohort.Program.title %></h1>
+      <p class="mt-1 text-slate-600"><%= cohort.name %><%= cohort.startsAt ? ' \u00b7 ' + fmtDate(cohort.startsAt) + (cohort.endsAt ? ' to ' + fmtDate(cohort.endsAt) : '') : '' %></p>
+    </div>
+    <span class="badge <%= labels.enrollment[enrollment.status].tone %>"><%= labels.enrollment[enrollment.status].text %></span>
+  </div>
+
+  <% if (certificate && !certificate.revokedAt) { %>
+  <a href="/certificates/<%= certificate.code %>" class="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-ink p-5 text-white hover:bg-brand-dark">
+    <span class="flex items-center gap-4"><span class="grid h-12 w-12 place-items-center rounded-xl bg-sun text-ink"><i class="fa-solid fa-award text-xl"></i></span><span><strong class="block text-sun">Your certificate is ready</strong><span class="text-sm text-emerald-100">Code <%= certificate.code %></span></span></span>
+    <span class="btn btn-sun btn-sm">View certificate</span>
+  </a>
+  <% } %>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-3">
+    <div class="space-y-6 lg:col-span-2">
+      <section class="panel p-6">
+        <h2 class="font-bold text-ink">Sessions</h2>
+        <% if (!upcoming.length && !past.length && !cancelled.length) { %>
+        <div class="mt-4 rounded-xl border border-dashed border-slate-300 bg-chalk px-6 py-10 text-center">
+          <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand"><i class="fa-solid fa-video"></i></span>
+          <p class="mt-3 font-semibold text-ink">No sessions scheduled yet</p>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-600">When your team schedules a session, it appears here in <%= tzName.replace('_', ' ') %> time, with a Join button on the day.</p>
+        </div>
+        <% } %>
+
+        <% if (upcoming.length) { const next = upcoming[0]; const w = windowFor(next); %>
+        <a href="/sessions/<%= next.id %>" class="mt-4 block rounded-2xl <%= w.state === 'open' ? 'bg-ink text-white' : 'border border-slate-200 bg-chalk' %> p-5 hover:border-brand/50">
+          <p class="text-xs font-semibold <%= w.state === 'open' ? 'text-sun' : 'text-brand' %>"><%= w.state === 'open' ? 'Live now' : 'Next session' %></p>
+          <p class="mt-1 font-display text-xl font-extrabold"><%= next.title %></p>
+          <p class="mt-1 text-sm <%= w.state === 'open' ? 'text-slate-300' : 'text-slate-600' %>"><%= fmtWhen(next.startsAt) %></p>
+          <span class="btn <%= w.state === 'open' ? 'btn-sun' : 'btn-primary' %> btn-sm mt-3"><i class="fa-solid fa-video"></i><%= w.state === 'open' ? 'Join now' : 'Open session' %></span>
+        </a>
+        <% if (upcoming.length > 1) { %>
+        <ul class="mt-4 divide-y divide-slate-100">
+          <% upcoming.slice(1, 6).forEach(function (s) { %>
+          <li class="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"><a class="font-semibold text-ink hover:text-brand" href="/sessions/<%= s.id %>"><%= s.title %></a><span class="text-slate-500"><%= fmtWhen(s.startsAt) %></span></li>
+          <% }) %>
+        </ul>
+        <% } %>
+        <% } %>
+
+        <% cancelled.forEach(function (s) { %>
+        <p class="mt-3 flex gap-2 text-sm text-rose-700"><i class="fa-solid fa-ban mt-0.5"></i><span><s><%= s.title %></s> (<%= fmtWhen(s.startsAt) %>) was cancelled.</span></p>
+        <% }) %>
+
+        <% if (past.length) { %>
+        <h3 class="mt-6 text-sm font-bold text-ink">Past sessions</h3>
+        <ul class="mt-2 divide-y divide-slate-100">
+          <% past.forEach(function (s) { const mark = att.marks[s.id]; %>
+          <li class="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
+            <a class="font-semibold text-ink hover:text-brand" href="/sessions/<%= s.id %>"><%= s.title %></a>
+            <span class="flex items-center gap-3 text-slate-500"><%= fmtDate(s.startsAt) %><span class="badge <%= mark ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' %>"><%= mark ? 'Present' : 'Absent' %></span></span>
+          </li>
+          <% }) %>
+        </ul>
+        <% } %>
+      </section>
+
+      <section class="panel p-6">
+        <div class="flex items-center justify-between gap-3"><h2 class="font-bold text-ink">Recordings</h2><% if (recordings.length) { %><a class="text-sm font-semibold text-brand hover:underline" href="/cohorts/<%= cohort.id %>/recordings">See all</a><% } %></div>
+        <% if (!recordings.length) { %>
+          <p class="mt-3 text-sm text-slate-600">Recordings of your sessions appear here after your team adds them.</p>
+        <% } else { %>
+        <ul class="mt-3 divide-y divide-slate-100">
+          <% recordings.forEach(function (r) { %><li><a class="flex items-center gap-3 py-2.5 text-sm font-semibold text-ink hover:text-brand" href="/recordings/<%= r.id %>"><i class="fa-solid fa-play w-4 text-center text-brand"></i><%= r.title %></a></li><% }) %>
+        </ul>
+        <% } %>
+      </section>
+    </div>
+    <div class="space-y-6">
+      <div class="panel p-6">
+        <h2 class="font-bold text-ink">Your cohort community</h2>
+        <% const wa = cohort.whatsappUrl || settings.whatsappGroupUrl; const tg = cohort.telegramUrl || settings.telegramUrl; %>
+        <div class="mt-3 grid gap-2">
+          <% if (wa) { %><a class="btn btn-whatsapp justify-center" href="<%= wa %>" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>WhatsApp group</a><% } %>
+          <% if (tg) { %><a class="btn btn-ghost justify-center" href="<%= tg %>" target="_blank" rel="noopener"><i class="fa-brands fa-telegram"></i>Telegram</a><% } %>
+          <% if (!wa && !tg) { %><p class="text-sm text-slate-600">Your team will share the community link here.</p><% } %>
+        </div>
+      </div>
+      <div class="panel p-6 text-sm">
+        <h2 class="font-bold text-ink">Your attendance</h2>
+        <% if (att.percent === null) { %>
+          <p class="mt-2 text-slate-600">It starts counting after your first session ends.</p>
+        <% } else { %>
+          <p class="mt-2"><strong class="font-display text-2xl text-ink"><%= att.percent %>%</strong> <span class="text-slate-600">(<%= att.attended %> of <%= att.held %> sessions)</span></p>
+          <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow="<%= att.percent %>" aria-valuemin="0" aria-valuemax="100"><div class="h-full rounded-full <%= att.percent >= cohort.attendanceRequiredPercent ? 'bg-emerald-500' : 'bg-amber-500' %>" style="width: <%= att.percent %>%"></div></div>
+          <p class="mt-2 text-xs text-slate-500"><%= att.percent >= cohort.attendanceRequiredPercent ? 'You are on track for your certificate.' : 'You need ' + cohort.attendanceRequiredPercent + '% for your certificate.' %></p>
+        <% } %>
+      </div>
+      <div class="panel p-6 text-sm">
+        <h2 class="font-bold text-ink">Good to know</h2>
+        <ul class="mt-3 space-y-2 text-slate-600">
+          <li class="flex gap-2"><i class="fa-solid fa-award mt-0.5 text-brand"></i>The certificate needs at least <strong class="text-ink"><%= cohort.attendanceRequiredPercent %>%</strong> attendance.</li>
+          <li class="flex gap-2"><i class="fa-solid fa-hand-pointer mt-0.5 text-brand"></i>Join sessions from this page so your attendance is recorded.</li>
+          <li class="flex gap-2"><i class="fa-solid fa-calendar-check mt-0.5 text-brand"></i>Enrolled on <%= fmtDate(enrollment.enrolledAt) %>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

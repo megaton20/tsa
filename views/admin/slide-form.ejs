@@ -1,0 +1,98 @@
+<%- include('../partials/admin-top') %>
+<a href="/admin/slides" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i>Homepage banners</a>
+<h1 class="mt-2 font-display text-3xl font-extrabold text-ink"><%= isNew ? 'New banner' : 'Edit banner' %></h1>
+
+<form method="post" action="<%= isNew ? '/admin/slides' : '/admin/slides/' + slide.id %>" enctype="multipart/form-data" class="mt-6 max-w-3xl space-y-6" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../partials/form-errors') %>
+
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Banner</h2>
+    <div>
+      <label class="label" for="image">Banner image</label>
+      <% if (slide.imageUrl) { %>
+      <img src="<%= slide.imageUrl %>" alt="Current banner" class="mb-3 max-h-40 rounded-xl border border-slate-200">
+      <label class="mb-3 flex items-center gap-2 text-sm"><input type="checkbox" name="removeImage"> Remove the current image</label>
+      <% } %>
+      <input class="field" id="image" name="image" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+      <p class="hint">Best at 1680 x 720 pixels (21:9). JPG, PNG, WebP or GIF, up to 5 MB. On phones the image is cropped to a squarer shape, so keep key content near the centre.</p>
+    </div>
+    <div>
+      <label class="label" for="imageUrlText">Or paste an image link</label>
+      <input class="field" id="imageUrlText" name="imageUrlText" placeholder="https://..." value="">
+    </div>
+    <label class="flex items-start gap-2.5 text-sm"><input class="mt-1" type="checkbox" name="textOverlay" <%= slide.textOverlay ? 'checked' : '' %>><span><strong>Show the title and description over the image.</strong><br><span class="text-slate-500">Turn this off if your banner already contains its own text. Only the button is shown then.</span></span></label>
+  </section>
+
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Text</h2>
+    <div>
+      <label class="label" for="title">Title</label>
+      <input class="field" id="title" name="title" maxlength="140" required value="<%= slide.title || '' %>">
+    </div>
+    <div>
+      <label class="label" for="subtitle">Short description</label>
+      <textarea class="field" id="subtitle" name="subtitle" rows="2"><%= slide.subtitle || '' %></textarea>
+    </div>
+    <div>
+      <label class="label" for="badge">Badge</label>
+      <input class="field" id="badge" name="badge" maxlength="60" placeholder="Applications open" value="<%= slide.badge || '' %>">
+    </div>
+  </section>
+
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Button</h2>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="label" for="ctaType">Where it leads</label>
+        <select class="field" id="ctaType" name="ctaType">
+          <% [['details', 'Program details page'], ['whatsapp', 'WhatsApp community'], ['telegram', 'Telegram community'], ['custom', 'Another link']].forEach(function (o) { %>
+          <option value="<%= o[0] %>" <%= slide.ctaType === o[0] ? 'selected' : '' %>><%= o[1] %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="ctaLabel">Button text</label>
+        <input class="field" id="ctaLabel" name="ctaLabel" maxlength="60" placeholder="Apply now" value="<%= slide.ctaLabel || '' %>">
+      </div>
+    </div>
+    <div>
+      <label class="label" for="programId">Linked program</label>
+      <select class="field" id="programId" name="programId">
+        <option value="">None</option>
+        <% programs.forEach(function (p) { %><option value="<%= p.id %>" <%= slide.programId === p.id ? 'selected' : '' %>><%= p.title %><%= p.status !== 'published' ? ' (' + p.status + ')' : '' %></option><% }) %>
+      </select>
+      <p class="hint">With "Program details page" selected, the button goes to this program and uses its banner if you upload none.</p>
+    </div>
+    <div>
+      <label class="label" for="ctaUrl">Button link</label>
+      <input class="field" id="ctaUrl" name="ctaUrl" placeholder="https://chat.whatsapp.com/... or /programs/..." value="<%= slide.ctaUrl || '' %>">
+      <p class="hint">Leave empty for a banner with no button. Community links must start with https://</p>
+    </div>
+  </section>
+
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Visibility</h2>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <label class="label" for="sortOrder">Order</label>
+        <input class="field" id="sortOrder" name="sortOrder" type="number" value="<%= slide.sortOrder || 0 %>">
+      </div>
+      <div>
+        <label class="label" for="startsAt">Show from (Lagos time)</label>
+        <input class="field" id="startsAt" name="startsAt" type="datetime-local" value="<%= toLagosInput(slide.startsAt) %>">
+      </div>
+      <div>
+        <label class="label" for="endsAt">Hide after (Lagos time)</label>
+        <input class="field" id="endsAt" name="endsAt" type="datetime-local" value="<%= toLagosInput(slide.endsAt) %>">
+      </div>
+    </div>
+    <label class="flex items-center gap-2.5 text-sm font-semibold"><input type="checkbox" name="isActive" <%= slide.isActive ? 'checked' : '' %>> Banner is active</label>
+  </section>
+
+  <div class="flex gap-3">
+    <button class="btn btn-primary btn-lg"><%= isNew ? 'Create banner' : 'Save changes' %></button>
+    <a href="/admin/slides" class="btn btn-ghost btn-lg">Cancel</a>
+  </div>
+</form>
+<%- include('../partials/admin-bottom') %>

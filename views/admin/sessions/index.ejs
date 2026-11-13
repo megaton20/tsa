@@ -1,0 +1,63 @@
+<%- include('../../partials/admin-top') %>
+<%
+  const host = function (u) { try { return new URL(u).hostname; } catch (e) { return ''; } };
+%>
+<a href="/admin/cohorts/<%= cohort.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= cohort.name %></a>
+<div class="mt-2 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="font-display text-3xl font-extrabold text-ink">Sessions</h1>
+    <p class="mt-1 text-sm text-slate-600"><%= program.title %> &middot; <%= cohort.name %>. Times show in <%= tzName.replace('_', ' ') %>.</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <% if (canP('attendance.view')) { %><a class="btn btn-ghost btn-sm" href="/admin/cohorts/<%= cohort.id %>/attendance"><i class="fa-solid fa-table-cells"></i>Attendance</a><% } %>
+    <% if (canP('sessions.manage')) { %><a class="btn btn-primary btn-sm" href="/admin/cohorts/<%= cohort.id %>/sessions/new"><i class="fa-solid fa-plus"></i>New session</a><% } %>
+  </div>
+</div>
+
+<% [['Upcoming', upcoming, false], ['Past', past, true]].forEach(function (grp) { const list = grp[1]; const isPast = grp[2]; %>
+<section class="mt-8">
+  <h2 class="font-bold text-ink"><%= grp[0] %> <span class="font-normal text-slate-500">(<%= list.length %>)</span></h2>
+  <% if (!list.length) { %>
+    <div class="panel mt-3 px-6 py-8 text-center text-sm text-slate-600"><%= isPast ? 'Nothing has taken place yet.' : 'No upcoming sessions. Schedule the first one, or a weekly series in one go.' %></div>
+  <% } %>
+  <ul class="mt-3 space-y-3">
+    <% list.forEach(function (i) { const s = i.session; const noLink = !s.meetLink && s.status === 'scheduled' && !isPast; %>
+    <li class="panel p-5 <%= noLink ? 'border-amber-300' : '' %>">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 class="font-bold text-ink"><%= s.title %></h3>
+            <% if (s.status === 'cancelled') { %><span class="badge bg-rose-50 text-rose-700">Cancelled</span>
+            <% } else if (i.win.state === 'open') { %><span class="badge bg-emerald-50 text-emerald-700"><i class="fa-solid fa-circle text-[8px]"></i>Live window</span><% } %>
+            <% if (noLink) { %><span class="badge bg-amber-50 text-amber-700"><i class="fa-solid fa-triangle-exclamation"></i>No meeting link</span><% } %>
+          </div>
+          <p class="mt-1 text-sm text-slate-600"><%= fmtWhen(s.startsAt) %> &middot; <%= Math.round((new Date(s.endsAt) - new Date(s.startsAt)) / 60000) %> min<%= s.lead ? ' \u00b7 Led by ' + s.lead.name : '' %></p>
+          <p class="mt-1 text-sm text-slate-600"><i class="fa-solid fa-user-check mr-1 text-slate-400"></i><%= i.joined %> of <%= enrolled %> joined</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <% if (canP('attendance.view')) { %><a class="btn btn-ghost btn-sm" href="/admin/sessions/<%= s.id %>/attendance"><i class="fa-solid fa-user-check"></i>Attendance</a><% } %>
+          <% if (canP('sessions.manage')) { %>
+          <a class="btn btn-ghost btn-sm" href="/admin/sessions/<%= s.id %>/edit"><i class="fa-solid fa-pen"></i>Edit</a>
+          <form method="post" action="/admin/sessions/<%= s.id %>/cancel" data-confirm="<%= s.status === 'cancelled' ? 'Restore this session?' : 'Cancel this session? It stops counting toward attendance.' %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-ghost btn-sm"><%= s.status === 'cancelled' ? 'Restore' : 'Cancel' %></button></form>
+          <% if (!i.joined) { %><form method="post" action="/admin/sessions/<%= s.id %>/delete" data-confirm="Delete this session?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button></form><% } %>
+          <% } %>
+        </div>
+      </div>
+
+      <% if (canP('sessions.manage') && s.status === 'scheduled' && !isPast) { %>
+      <form method="post" action="/admin/sessions/<%= s.id %>/link" class="mt-4 flex flex-wrap items-center gap-2">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <label class="sr-only" for="link-<%= s.id %>">Meeting link</label>
+        <input class="field min-w-[16rem] flex-1 py-2 text-sm" id="link-<%= s.id %>" name="meetLink" placeholder="<%= s.meetLink ? 'Replace the link' : 'Paste the Google Meet or Zoom link' %>" required>
+        <button class="btn btn-primary btn-sm">Save link</button>
+        <% if (s.meetLink) { %><span class="text-xs text-slate-500"><i class="fa-solid fa-link mr-1"></i>Link set (<%= host(s.meetLink) %>)</span><% } %>
+      </form>
+      <% } else if (s.meetLink) { %>
+      <p class="mt-3 text-xs text-slate-500"><i class="fa-solid fa-link mr-1"></i>Link set (<%= host(s.meetLink) %>)</p>
+      <% } %>
+    </li>
+    <% }) %>
+  </ul>
+</section>
+<% }) %>
+<%- include('../../partials/admin-bottom') %>

@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<% const f = form || { name: currentUser.name, timezone: currentUser.timezone, reminderEmails: currentUser.reminderEmails }; %>
+<section class="mx-auto max-w-xl px-4 py-10 sm:px-6">
+  <a href="/dashboard" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i>Dashboard</a>
+  <h1 class="mt-3 font-display text-3xl font-extrabold text-ink">Your account</h1>
+
+  <form method="post" action="/account" class="panel mt-6 space-y-5 p-6" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <%- include('../partials/form-errors') %>
+    <div>
+      <label class="label" for="name">Full name</label>
+      <input class="field" id="name" name="name" maxlength="80" required value="<%= f.name %>">
+      <p class="hint">This is the name printed on your certificates, so spell it the way you want it to appear.</p>
+    </div>
+    <div>
+      <label class="label" for="timezone">Time zone</label>
+      <select class="field" id="timezone" name="timezone">
+        <% zones.forEach(function (z) { %><option value="<%= z %>" <%= f.timezone === z ? 'selected' : '' %>><%= z.replace(/_/g, ' ') %></option><% }) %>
+      </select>
+      <p class="hint">Session times are shown in this time zone. We set it from your browser; change it here if it is wrong.</p>
+    </div>
+    <label class="flex items-start gap-2.5 text-sm"><input class="mt-1" type="checkbox" name="reminderEmails" <%= f.reminderEmails ? 'checked' : '' %>><span><strong>Email me before sessions.</strong><br><span class="text-slate-500">One reminder the day before and one an hour before.</span></span></label>
+    <dl class="rounded-xl bg-chalk p-4 text-sm">
+      <div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-500">Email</dt><dd class="break-all font-semibold text-ink"><%= currentUser.email %></dd></div>
+      <div class="mt-2 flex gap-3"><dt class="w-24 shrink-0 text-slate-500">Sign-in</dt><dd class="font-semibold text-ink"><%= currentUser.passwordHash ? 'Email and password' : 'Google' %><%= currentUser.passwordHash && currentUser.googleId ? ' (Google linked)' : '' %></dd></div>
+    </dl>
+    <button class="btn btn-primary btn-lg">Save changes</button>
+  </form>
+</section>
+<%- include('../partials/footer') %>

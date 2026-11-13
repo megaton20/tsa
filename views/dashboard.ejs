@@ -1,0 +1,161 @@
+<%- include('partials/header') %>
+<section class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="font-display text-3xl font-extrabold text-ink">Hello, <%= currentUser.name.split(' ')[0] %></h1>
+      <p class="mt-1 text-sm text-slate-600">Sessions show in <strong><%= currentUser.timezone.replace('_', ' ') %></strong> time.</p>
+    </div>
+    <% if (canAdmin) { %><a href="/admin" class="btn btn-ghost"><i class="fa-solid fa-gauge-high"></i>Open admin</a><% } %>
+  </div>
+
+  <section class="panel mt-6 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <span class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-ink font-display text-2xl font-extrabold text-sun" aria-hidden="true"><%= stats.level.n %></span>
+        <div>
+          <p class="text-sm font-semibold text-slate-500">Your level</p>
+          <p class="font-display text-2xl font-extrabold text-ink"><%= stats.level.name %></p>
+        </div>
+      </div>
+      <dl class="flex flex-wrap gap-6 text-sm">
+        <div><dd class="font-display text-xl font-extrabold text-ink"><%= stats.attended %></dd><dt class="text-slate-500">Sessions attended</dt></div>
+        <div><dd class="font-display text-xl font-extrabold text-ink"><%= stats.recordings %></dd><dt class="text-slate-500">Recordings watched</dt></div>
+        <div><dd class="font-display text-xl font-extrabold text-ink"><%= stats.certificates %></dd><dt class="text-slate-500"><a class="hover:text-brand hover:underline" href="/certificates"><%= stats.certificates === 1 ? 'Certificate' : 'Certificates' %></a></dt></div>
+      </dl>
+    </div>
+    <div class="mt-5">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-500"><span><%= stats.xp %> XP</span><span><%= stats.level.next ? stats.level.toNext + ' XP to ' + stats.level.next.name : 'Top level reached' %></span></div>
+      <div class="mt-1.5 h-2.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Progress to the next level" aria-valuenow="<%= stats.level.pct %>" aria-valuemin="0" aria-valuemax="100"><div class="h-full rounded-full bg-gradient-to-r from-brand to-sun" style="width: <%= stats.level.pct %>%"></div></div>
+      <p class="mt-2 text-xs text-slate-500">Earn XP by joining sessions (10), watching recordings (5) and completing a cohort (100).</p>
+    </div>
+  </section>
+
+  <% const offers = applications.filter(function (a) { return a.status === 'offered'; }); %>
+  <% offers.forEach(function (a) { %>
+  <a href="/cohorts/<%= a.cohortId %>/application" class="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 hover:border-emerald-300">
+    <span><strong class="text-emerald-900">You have a seat in <%= a.Cohort.Program.title %> (<%= a.Cohort.name %>).</strong><br><span class="text-sm text-emerald-800">Accept by <%= fmtDateTime(a.offerExpiresAt) %> to keep it.</span></span>
+    <span class="btn btn-primary">View your offer</span>
+  </a>
+  <% }) %>
+
+  <% if (nextSessions.length) { %>
+  <section class="panel mt-6 p-6">
+    <h2 class="font-bold text-ink">Coming up</h2>
+    <ul class="mt-3 divide-y divide-slate-100">
+      <% nextSessions.forEach(function (n) { %>
+      <li class="flex flex-wrap items-center justify-between gap-3 py-3">
+        <div>
+          <a class="font-semibold text-ink hover:text-brand" href="/sessions/<%= n.session.id %>"><%= n.session.title %></a>
+          <p class="text-sm text-slate-600"><%= n.session.Cohort.Program.title %> &middot; <%= fmtWhen(n.session.startsAt) %></p>
+        </div>
+        <% if (n.win.state === 'open') { %><a class="btn btn-sun btn-sm" href="/sessions/<%= n.session.id %>"><i class="fa-solid fa-video"></i>Join now</a>
+        <% } else { %><a class="btn btn-ghost btn-sm" href="/sessions/<%= n.session.id %>">Open</a><% } %>
+      </li>
+      <% }) %>
+    </ul>
+  </section>
+  <% } %>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-3">
+    <div class="space-y-6 lg:col-span-2">
+      <section class="panel p-6">
+        <h2 class="font-bold text-ink">Your cohorts</h2>
+        <% if (!enrollments.length) { %>
+        <div class="mt-4 rounded-xl border border-dashed border-slate-300 bg-chalk px-6 py-10 text-center">
+          <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand"><i class="fa-solid fa-people-group"></i></span>
+          <p class="mt-3 font-semibold text-ink">You have not joined a cohort yet</p>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-600">Pick a program, choose a cohort, and enroll or apply. It will show up here.</p>
+          <a href="/programs" class="btn btn-primary mt-5">Browse programs</a>
+        </div>
+        <% } else { %>
+        <ul class="mt-4 divide-y divide-slate-100">
+          <% enrollments.forEach(function (e) { %>
+          <li class="flex flex-wrap items-center justify-between gap-3 py-3">
+            <div>
+              <p class="font-semibold text-ink"><%= e.Cohort.Program.title %></p>
+              <p class="text-sm text-slate-600"><%= e.Cohort.name %> &middot; <span class="badge <%= labels.enrollment[e.status].tone %>"><%= labels.enrollment[e.status].text %></span></p>
+            </div>
+            <a class="btn btn-ghost btn-sm" href="/cohorts/<%= e.cohortId %>"><i class="fa-solid fa-door-open"></i>Open</a>
+          </li>
+          <% }) %>
+        </ul>
+        <% } %>
+      </section>
+
+      <% const others = applications.filter(function (a) { return a.status !== 'offered'; }); %>
+      <% if (others.length) { %>
+      <section class="panel p-6">
+        <h2 class="font-bold text-ink">Your applications</h2>
+        <ul class="mt-4 divide-y divide-slate-100">
+          <% others.forEach(function (a) { %>
+          <li class="flex flex-wrap items-center justify-between gap-3 py-3">
+            <div>
+              <p class="font-semibold text-ink"><%= a.Cohort.Program.title %></p>
+              <p class="text-sm text-slate-600"><%= a.Cohort.name %> &middot; <span class="badge <%= labels.application[a.status].tone %>"><%= labels.application[a.status].text %></span></p>
+            </div>
+            <a class="btn btn-ghost btn-sm" href="/cohorts/<%= a.cohortId %>/application">View</a>
+          </li>
+          <% }) %>
+        </ul>
+      </section>
+      <% } %>
+    </div>
+
+    <div class="space-y-6">
+      <div class="panel p-6">
+        <div class="flex items-center justify-between gap-3"><h2 class="font-bold text-ink">Your account</h2><a class="text-sm font-semibold text-brand hover:underline" href="/account">Edit</a></div>
+        <dl class="mt-3 space-y-2 text-sm">
+          <div><dt class="text-slate-500">Name on certificates</dt><dd class="font-semibold text-ink"><%= currentUser.name %></dd></div>
+          <div><dt class="text-slate-500">Email</dt><dd class="break-all font-semibold text-ink"><%= currentUser.email %></dd></div>
+        </dl>
+      </div>
+      <% if (settings.whatsappChannelUrl || settings.whatsappGroupUrl || settings.telegramUrl) { %>
+      <div class="panel p-6">
+        <h2 class="font-bold text-ink">Community</h2>
+        <div class="mt-3 grid gap-2">
+          <% if (settings.whatsappChannelUrl) { %><a class="btn btn-whatsapp justify-center" href="<%= settings.whatsappChannelUrl %>" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>WhatsApp channel</a><% } %>
+          <% if (settings.whatsappGroupUrl) { %><a class="btn btn-ghost justify-center" href="<%= settings.whatsappGroupUrl %>" target="_blank" rel="noopener"><i class="fa-solid fa-user-group"></i>WhatsApp group</a><% } %>
+          <% if (settings.telegramUrl) { %><a class="btn btn-ghost justify-center" href="<%= settings.telegramUrl %>" target="_blank" rel="noopener"><i class="fa-brands fa-telegram"></i>Telegram</a><% } %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <% if (diveBack.length || lastViewed.length) { %>
+  <section class="mt-10">
+    <h2 class="font-display text-2xl font-extrabold text-ink">Dive back in</h2>
+    <p class="mt-1 text-sm text-slate-600">Pick up where you left off, or revisit a program you finished.</p>
+    <div class="mt-4 grid gap-4 md:grid-cols-2">
+      <% lastViewed.forEach(function (v) { %>
+      <a href="/recordings/<%= v.Recording.id %>" class="panel flex items-center gap-4 p-4 hover:border-brand/50">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-ink text-sun"><i class="fa-solid fa-play"></i></span>
+        <span class="min-w-0"><span class="block text-xs font-semibold text-brand">Continue watching</span><span class="block truncate font-bold text-ink"><%= v.Recording.title %></span><span class="block truncate text-sm text-slate-600"><%= v.Recording.Cohort.Program.title %></span></span>
+      </a>
+      <% }) %>
+      <% diveBack.forEach(function (d) { %>
+      <div class="panel p-4">
+        <p class="font-bold text-ink"><%= d.cohort.Program.title %></p>
+        <p class="text-sm text-slate-600"><%= d.cohort.name %> &middot; finished</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <% if (d.recordings) { %><a class="btn btn-ghost btn-sm" href="/cohorts/<%= d.cohort.id %>/recordings"><i class="fa-solid fa-circle-play"></i>Recordings (<%= d.recordings %>)</a><% } %>
+          <% if (d.certificate) { %><a class="btn btn-sun btn-sm" href="/certificates/<%= d.certificate.code %>"><i class="fa-solid fa-award"></i>Certificate</a><% } %>
+          <a class="btn btn-ghost btn-sm" href="/cohorts/<%= d.cohort.id %>">Open cohort</a>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <% if (suggestions.length) { %>
+  <section class="mt-10">
+    <h2 class="font-display text-2xl font-extrabold text-ink">Suggested for you</h2>
+    <p class="mt-1 text-sm text-slate-600">Open cohorts that fit what you have done so far.</p>
+    <div class="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <% suggestions.forEach(function (item) { %><%- include('partials/program-card', { item: item }) %><% }) %>
+    </div>
+  </section>
+  <% } %>
+</section>
+<%- include('partials/footer') %>

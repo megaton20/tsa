@@ -1,0 +1,48 @@
+<%- include('../partials/header') %>
+<section class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+  <div class="no-print mb-5 flex flex-wrap items-center justify-between gap-3">
+    <a href="/certificates" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i>Your certificates</a>
+    <div class="flex flex-wrap gap-2">
+      <% if (!certificate.revokedAt) { %>
+      <a class="btn btn-primary" href="/certificates/<%= certificate.code %>/download.pdf"><i class="fa-solid fa-file-arrow-down"></i>Download PDF</a>
+      <button type="button" class="btn btn-ghost" onclick="window.print()"><i class="fa-solid fa-print"></i>Print</button>
+      <% } %>
+    </div>
+  </div>
+
+  <% if (certificate.revokedAt) { %>
+  <p class="no-print mb-5 flex gap-3 rounded-xl bg-rose-50 p-4 text-rose-800"><i class="fa-solid fa-ban mt-1"></i><span><strong>This certificate has been withdrawn.</strong><br><%= certificate.revokedReason %></span></p>
+  <% } %>
+
+  <article class="print-sheet relative mx-auto aspect-[297/210] w-full max-w-4xl overflow-hidden bg-white shadow-xl ring-1 ring-slate-200">
+    <div class="absolute inset-[1.2%] border-[5px] border-sun-dark"></div>
+    <div class="absolute inset-[2.6%] border border-brand"></div>
+    <div class="absolute inset-x-[2.6%] top-[2.6%] bg-ink py-[3.2%] text-center">
+      <p class="font-display text-[clamp(0.9rem,3.2vw,1.8rem)] font-extrabold uppercase tracking-[0.18em] text-sun">True Series Academy</p>
+      <p class="mt-1 text-[clamp(0.5rem,1.3vw,0.8rem)] uppercase tracking-[0.3em] text-emerald-100">Certificate of completion</p>
+      <div class="absolute inset-x-0 -bottom-[3px] h-[3px] bg-sun"></div>
+    </div>
+
+    <div class="absolute inset-x-[8%] top-[27%] text-center">
+      <p class="font-display text-[clamp(0.7rem,1.8vw,1.1rem)] italic text-slate-500">This certifies that</p>
+      <p class="mx-auto mt-[1.5%] inline-block max-w-full border-b-2 border-sun-dark px-[3%] pb-[0.8%] font-display text-[clamp(1.2rem,4.8vw,3rem)] font-extrabold leading-tight text-ink"><%= certificate.recipientName %></p>
+      <p class="mt-[2.5%] font-display text-[clamp(0.7rem,1.8vw,1.1rem)] italic text-slate-500">has successfully completed</p>
+      <p class="mt-[1.5%] font-display text-[clamp(0.9rem,3vw,1.9rem)] font-extrabold leading-snug text-brand"><%= certificate.programTitle %></p>
+      <p class="mt-[2%] text-[clamp(0.55rem,1.4vw,0.85rem)] text-slate-600"><%= certificate.cohortName %> &nbsp;-&nbsp; Completed <%= fmtDate(certificate.completedOn) %><%= certificate.attendancePercent !== null && certificate.attendancePercent !== undefined ? ' \u00a0-\u00a0 Attendance ' + certificate.attendancePercent + '%' : '' %></p>
+    </div>
+
+    <div class="absolute bottom-[7%] left-[6%] text-left">
+      <p class="text-[clamp(0.45rem,1.1vw,0.65rem)] text-slate-500">Certificate code</p>
+      <p class="font-mono text-[clamp(0.7rem,1.8vw,1.1rem)] font-bold tracking-wider text-ink"><%= certificate.code %></p>
+      <p class="mt-[3%] text-[clamp(0.45rem,1.1vw,0.65rem)] text-slate-500">Check it is genuine at</p>
+      <p class="break-all text-[clamp(0.45rem,1.1vw,0.65rem)] text-brand"><%= verifyUrl %></p>
+    </div>
+    <div class="absolute bottom-[6%] right-[7%] text-center">
+      <div class="mx-auto grid aspect-square w-[clamp(3rem,9vw,5.5rem)] place-items-center rounded-full bg-sun ring-2 ring-sun-dark ring-offset-2 ring-offset-white"><span class="font-display text-[clamp(0.8rem,2.4vw,1.5rem)] font-extrabold text-ink">TSA</span></div>
+      <p class="mt-1 text-[clamp(0.45rem,1.1vw,0.65rem)] text-slate-500">Issued <%= fmtDate(certificate.issuedAt) %></p>
+    </div>
+  </article>
+
+  <p class="no-print mt-5 text-center text-sm text-slate-500">Anyone can check this certificate at <a class="font-semibold text-brand hover:underline" href="/verify/<%= certificate.code %>"><%= verifyUrl %></a>. The PDF uses plain Latin letters for your name; this page shows it exactly as written.</p>
+</section>
+<%- include('../partials/footer') %>

@@ -1,0 +1,62 @@
+<%- include('../partials/header') %>
+<section class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+  <a href="/cohorts/<%= cohort.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= cohort.Program.title %> &middot; <%= cohort.name %></a>
+  <h1 class="mt-3 font-display text-3xl font-extrabold leading-tight text-ink"><%= session.title %></h1>
+  <% if (session.lead) { %><p class="mt-1 text-slate-600">Led by <%= session.lead.name %></p><% } %>
+
+  <div class="panel mt-6 p-6">
+    <p class="text-sm font-semibold text-slate-500">When</p>
+    <p class="mt-1 font-display text-2xl font-extrabold text-ink"><%= fmtWhen(session.startsAt) %></p>
+    <p class="mt-1 text-sm text-slate-600">Ends <%= fmtWhen(session.endsAt) %>. Shown in your time zone (<%= tzName.replace('_', ' ') %>). <a class="font-semibold text-brand hover:underline" href="/account">Change it</a></p>
+
+    <div class="mt-6 border-t border-slate-100 pt-6" <%- win.state === 'upcoming' && isToday ? 'data-reload-at="' + win.opens.toISOString() + '"' : '' %>>
+      <% if (win.state === 'cancelled') { %>
+        <p class="flex gap-3 rounded-xl bg-rose-50 p-4 text-rose-800"><i class="fa-solid fa-ban mt-1"></i><span><strong>This session was cancelled.</strong><br>It does not count toward your attendance. Watch your email and the community for the new time.</span></p>
+
+      <% } else if (win.state === 'upcoming') { %>
+        <% if (isToday) { %>
+          <p class="font-bold text-ink">The session is today</p>
+          <p class="mt-1 text-sm text-slate-600">Joining opens at <strong class="text-ink"><%= fmtWhen(win.opens) %></strong>, <%= session.joinOpensMinutesBefore %> minutes before the start. This page opens it for you automatically.</p>
+          <p class="mt-3 text-sm text-slate-600">Opens in <strong class="text-ink" data-countdown></strong></p>
+        <% } else { %>
+          <p class="font-bold text-ink">Joining opens on the day</p>
+          <p class="mt-1 text-sm text-slate-600">The Join button becomes available at <strong class="text-ink"><%= fmtWhen(win.opens) %></strong>.</p>
+        <% } %>
+        <button class="btn btn-primary btn-lg mt-4" disabled aria-disabled="true"><i class="fa-solid fa-video"></i>Join the session</button>
+        <a class="mt-4 ml-2 inline-flex items-center gap-2 text-sm font-semibold text-brand hover:underline" href="/sessions/<%= session.id %>/calendar.ics"><i class="fa-solid fa-calendar-plus"></i>Add to calendar</a>
+
+      <% } else if (win.state === 'open') { %>
+        <% if (hasLink) { %>
+          <p class="font-bold text-ink">The session is open</p>
+          <p class="mt-1 text-sm text-slate-600">Press Join to enter the meeting. Joining from here is how your attendance is recorded, and it is how the team knows who to let in.</p>
+          <form method="post" action="/sessions/<%= session.id %>/join" class="mt-4">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn-sun btn-lg"><i class="fa-solid fa-video"></i>Join the session</button>
+          </form>
+        <% } else { %>
+          <p class="flex gap-3 rounded-xl bg-amber-50 p-4 text-amber-900"><i class="fa-solid fa-hourglass-half mt-1"></i><span><strong>The meeting link is not ready yet.</strong><br>Your team has been asked to add it. Refresh this page in a few minutes.</span></p>
+        <% } %>
+
+      <% } else { %>
+        <p class="font-bold text-ink">This session has ended</p>
+        <% if (recording) { %><a class="btn btn-primary mt-3" href="/recordings/<%= recording.id %>"><i class="fa-solid fa-circle-play"></i>Watch the recording</a><% } else { %><p class="mt-1 text-sm text-slate-600">If a recording is added, it will appear here and on your cohort page.</p><% } %>
+      <% } %>
+    </div>
+
+    <% if (attendance) { %>
+    <p class="mt-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800"><i class="fa-solid fa-circle-check"></i>
+      <% if (attendance.method === 'manual') { %>Your team marked you present.<% } else { %>Attendance recorded. You first joined at <%= fmtWhen(attendance.firstJoinedAt) %>.<% } %>
+    </p>
+    <% } else if (win.state === 'ended') { %>
+    <p class="mt-5 flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-600"><i class="fa-regular fa-circle-xmark"></i>No attendance was recorded for you.</p>
+    <% } %>
+  </div>
+
+  <% if (session.description) { %>
+  <div class="mt-6">
+    <h2 class="font-bold text-ink">About this session</h2>
+    <p class="mt-2 whitespace-pre-line leading-relaxed text-slate-700"><%= session.description %></p>
+  </div>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

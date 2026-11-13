@@ -1,0 +1,92 @@
+<%- include('../../partials/admin-top') %>
+<a href="/admin/cohorts/<%= cohort.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= cohort.name %></a>
+<h1 class="mt-2 font-display text-3xl font-extrabold text-ink">Applications</h1>
+<p class="mt-1 text-sm text-slate-600">
+  Pass mark <strong><%= cohort.passMark %>%</strong>, grace from <strong><%= cohort.graceMark %>%</strong>.
+  Seats left: <strong><%= left === null ? 'no limit' : left %></strong>.
+  Manual offers can go over the seat limit.
+</p>
+
+<nav class="mt-5 flex flex-wrap gap-2 text-sm" aria-label="Filter by status">
+  <% const tabs = [['', 'All (except unfinished)'], ['in_review', 'In review'], ['offered', 'Offered'], ['waitlisted', 'Waitlisted'], ['not_selected', 'Not selected'], ['accepted', 'Accepted'], ['expired', 'Expired'], ['in_progress', 'Unfinished']]; %>
+  <% tabs.forEach(function (t) { const n = t[0] ? (counts[t[0]] || 0) : null; %>
+  <a href="?status=<%= t[0] %>" class="rounded-full border px-3 py-1.5 font-semibold <%= status === t[0] ? 'border-ink bg-ink text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-brand/50' %>"><%= t[1] %><%= n !== null ? ' (' + n + ')' : '' %></a>
+  <% }) %>
+</nav>
+<form method="get" class="mt-4 flex gap-3">
+  <input type="hidden" name="status" value="<%= status %>">
+  <input class="field max-w-xs" name="q" value="<%= q %>" placeholder="Search name or email" aria-label="Search applicants">
+  <button class="btn btn-ghost"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
+</form>
+
+<div class="mt-5 space-y-3">
+  <% if (!apps.length) { %><div class="panel px-6 py-12 text-center text-sm text-slate-600">No applications here.</div><% } %>
+  <% apps.forEach(function (a) {
+       const score = a.scorePercent;
+       const scoreTone = score === null || score === undefined ? 'bg-slate-100 text-slate-600' : (score >= cohort.passMark ? 'bg-emerald-50 text-emerald-700' : (score >= cohort.graceMark ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'));
+       const allowed = actions[a.status] || [];
+       const names = { offer: 'Offer a seat', waitlist: 'Move to the waiting list', not_selected: 'Do not select', extend: 'Extend the offer', reset_quiz: 'Let them retake the quiz' };
+       const graceApproval = a.status === 'in_review' && a.reviewReason === 'grace'; %>
+  <article class="panel p-5">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <p class="font-semibold text-ink"><%= a.User.name %></p>
+        <p class="text-xs text-slate-500"><%= a.User.email %></p>
+        <p class="mt-2 flex flex-wrap items-center gap-2">
+          <span class="badge <%= labels.application[a.status].tone %>"><%= labels.application[a.status].text %></span>
+          <span class="badge <%= scoreTone %>"><%= score === null || score === undefined ? 'No score' : 'Score ' + score + '%' %></span>
+          <% if (a.status === 'in_review') { %><span class="badge bg-slate-100 text-slate-600"><%= a.reviewReason === 'grace' ? 'In the grace band' : 'No quiz to score' %></span><% } %>
+          <% if (a.status === 'offered' && a.offerExpiresAt) { %><span class="text-xs text-slate-500">Accept by <%= fmtDateTime(a.offerExpiresAt) %></span><% } %>
+        </p>
+      </div>
+      <% if (canP('applications.review') && graceApproval) { %>
+      <form method="post" action="/admin/cohorts/<%= cohort.id %>/applications/<%= a.id %>/decision">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= currentUrl %>"><input type="hidden" name="action" value="offer">
+        <button class="btn btn-primary btn-sm"><i class="fa-solid fa-check"></i>Approve with grace</button>
+      </form>
+      <% } %>
+    </div>
+
+    <% if (a.decisionNote) { %><p class="mt-3 rounded-lg bg-chalk p-3 text-sm text-slate-700"><i class="fa-solid fa-note-sticky mr-2 text-slate-400"></i><%= a.decisionNote %></p><% } %>
+
+    <details class="mt-3">
+      <summary class="cursor-pointer text-sm font-semibold text-brand">Application details</summary>
+      <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+        <div><dt class="text-slate-500">Phone</dt><dd class="text-ink"><%= (a.details || {}).phone || '-' %></dd></div>
+        <div><dt class="text-slate-500">Location</dt><dd class="text-ink"><%= (a.details || {}).state || '-' %></dd></div>
+        <div><dt class="text-slate-500">Education</dt><dd class="text-ink"><%= (a.details || {}).education || '-' %></dd></div>
+        <div><dt class="text-slate-500">Occupation</dt><dd class="text-ink"><%= (a.details || {}).occupation || '-' %></dd></div>
+        <div class="sm:col-span-2"><dt class="text-slate-500">Why they want to join</dt><dd class="whitespace-pre-line text-ink"><%= (a.details || {}).motivation || '-' %></dd></div>
+      </dl>
+    </details>
+
+    <% if (canP('applications.review') && allowed.length) { %>
+    <details class="mt-3">
+      <summary class="cursor-pointer text-sm font-semibold text-brand">Make a decision</summary>
+      <form method="post" action="/admin/cohorts/<%= cohort.id %>/applications/<%= a.id %>/decision" class="mt-3 grid gap-3 sm:grid-cols-3">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= currentUrl %>">
+        <div>
+          <label class="label" for="act-<%= a.id %>">Action</label>
+          <select class="field" id="act-<%= a.id %>" name="action"><% allowed.forEach(function (x) { %><option value="<%= x %>"><%= names[x] %></option><% }) %></select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="label" for="note-<%= a.id %>">Reason (kept with the decision)</label>
+          <input class="field" id="note-<%= a.id %>" name="note" maxlength="500" placeholder="Why are you making this call?">
+        </div>
+        <div><button class="btn btn-primary btn-sm">Apply decision</button></div>
+      </form>
+    </details>
+    <% } %>
+  </article>
+  <% }) %>
+</div>
+
+<% if (pages > 1) { %>
+<nav class="mt-5 flex items-center justify-between text-sm" aria-label="Pagination">
+  <% const qs = function (p) { return '?page=' + p + '&status=' + encodeURIComponent(status) + (q ? '&q=' + encodeURIComponent(q) : ''); }; %>
+  <% if (page > 1) { %><a class="btn btn-ghost btn-sm" href="<%= qs(page - 1) %>"><i class="fa-solid fa-chevron-left"></i>Previous</a><% } else { %><span></span><% } %>
+  <span class="text-slate-500">Page <%= page %> of <%= pages %></span>
+  <% if (page < pages) { %><a class="btn btn-ghost btn-sm" href="<%= qs(page + 1) %>">Next<i class="fa-solid fa-chevron-right"></i></a><% } else { %><span></span><% } %>
+</nav>
+<% } %>
+<%- include('../../partials/admin-bottom') %>

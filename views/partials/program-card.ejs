@@ -1,0 +1,24 @@
+<% const p = item.program; const c = item.cohort; %>
+<a href="/programs/<%= p.slug %>" class="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-colors hover:border-brand/50">
+  <div class="relative aspect-[16/9] overflow-hidden bg-ink">
+    <% if (p.bannerUrl) { %>
+      <img src="<%= p.bannerUrl %>" alt="" loading="lazy" class="h-full w-full object-cover">
+    <% } else { %>
+      <div class="grid h-full place-items-center bg-gradient-to-br from-ink via-[#0E5A3C] to-brand text-4xl text-white/30"><i class="fa-solid fa-graduation-cap"></i></div>
+    <% } %>
+    <% if (c) { %><span class="badge absolute left-3 top-3 <%= labels.cohort[c.status].tone %>"><%= labels.cohort[c.status].text %></span><% } %>
+  </div>
+  <div class="flex flex-1 flex-col p-5">
+    <% if (p.category) { %><p class="text-xs font-semibold text-brand"><%= p.category %></p><% } %>
+    <h3 class="mt-1 font-display text-xl font-extrabold leading-snug text-ink group-hover:text-brand"><%= p.title %></h3>
+    <% if (p.summary) { %><p class="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600"><%= p.summary %></p><% } %>
+    <div class="mt-auto flex items-center justify-between gap-3 pt-4 text-sm">
+      <% if (c) { %>
+        <span class="font-bold text-ink"><%= priceLabel(c) %></span>
+        <span class="text-xs text-slate-500"><%= c.startsAt ? 'Starts ' + fmtDate(c.startsAt) : labels.mode[c.enrollmentMode] %></span>
+      <% } else { %>
+        <span class="text-xs text-slate-500">No cohort scheduled yet</span>
+      <% } %>
+    </div>
+  </div>
+</a>

@@ -1,0 +1,33 @@
+<%- include('../partials/admin-top') %>
+<h1 class="font-display text-3xl font-extrabold text-ink">Settings</h1>
+<p class="mt-1 text-sm text-slate-600">Community links power the one-time prompt visitors see and the links in the footer.</p>
+
+<form method="post" action="/admin/settings" class="mt-6 max-w-2xl space-y-6" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../partials/form-errors') %>
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Community</h2>
+    <div>
+      <label class="label" for="whatsappChannelUrl"><i class="fa-brands fa-whatsapp mr-1 text-emerald-600"></i>WhatsApp channel link</label>
+      <input class="field" id="whatsappChannelUrl" name="whatsappChannelUrl" placeholder="https://whatsapp.com/channel/..." value="<%= values.whatsappChannelUrl %>">
+    </div>
+    <div>
+      <label class="label" for="whatsappGroupUrl"><i class="fa-solid fa-user-group mr-1 text-emerald-600"></i>WhatsApp group link</label>
+      <input class="field" id="whatsappGroupUrl" name="whatsappGroupUrl" placeholder="https://chat.whatsapp.com/..." value="<%= values.whatsappGroupUrl %>">
+    </div>
+    <div>
+      <label class="label" for="telegramUrl"><i class="fa-brands fa-telegram mr-1 text-sky-600"></i>Telegram link</label>
+      <input class="field" id="telegramUrl" name="telegramUrl" placeholder="https://t.me/..." value="<%= values.telegramUrl %>">
+    </div>
+    <p class="hint">Leave all three empty to switch the prompt off.</p>
+  </section>
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Support</h2>
+    <div>
+      <label class="label" for="supportEmail">Support email</label>
+      <input class="field" id="supportEmail" name="supportEmail" type="email" value="<%= values.supportEmail %>">
+    </div>
+  </section>
+  <button class="btn btn-primary btn-lg">Save settings</button>
+</form>
+<%- include('../partials/admin-bottom') %>

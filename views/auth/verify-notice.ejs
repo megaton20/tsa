@@ -1,0 +1,11 @@
+<%- include('../partials/auth-top') %>
+<span class="grid h-14 w-14 place-items-center rounded-2xl bg-brand-soft text-2xl text-brand"><i class="fa-solid fa-envelope-circle-check"></i></span>
+<h1 class="mt-5 font-display text-3xl font-extrabold text-ink">Check your email</h1>
+<p class="mt-2 leading-relaxed text-slate-600">We sent a verification link to <strong class="text-ink"><%= email %></strong>. Open it to finish creating your account. The link works for 24 hours.</p>
+<form method="post" action="/resend-verification" class="mt-6">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="email" value="<%= email %>">
+  <button class="btn btn-ghost"><i class="fa-solid fa-rotate-right"></i>Send the link again</button>
+</form>
+<p class="mt-6 text-sm text-slate-500">Cannot find it? Check your spam folder, or <a class="font-semibold text-brand hover:underline" href="/register">use a different email</a>.</p>
+<%- include('../partials/auth-bottom') %>

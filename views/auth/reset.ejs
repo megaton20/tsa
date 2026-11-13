@@ -1,0 +1,22 @@
+<%- include('../partials/auth-top') %>
+<h1 class="font-display text-3xl font-extrabold text-ink">Choose a new password</h1>
+<div class="mt-6">
+  <%- include('../partials/form-errors') %>
+  <form method="post" action="/reset-password/<%= token %>" class="space-y-4" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div>
+      <label class="label" for="password">New password</label>
+      <div class="relative">
+        <input class="field pr-11" id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+        <button type="button" data-toggle-password="password" class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-slate-700" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
+      </div>
+      <p class="hint">At least 8 characters.</p>
+    </div>
+    <div>
+      <label class="label" for="confirm">Confirm new password</label>
+      <input class="field" id="confirm" name="confirm" type="password" autocomplete="new-password" required>
+    </div>
+    <button class="btn btn-primary w-full justify-center py-3">Save password</button>
+  </form>
+</div>
+<%- include('../partials/auth-bottom') %>

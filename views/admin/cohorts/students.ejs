@@ -1,0 +1,59 @@
+<%- include('../../partials/admin-top') %>
+<a href="/admin/cohorts/<%= cohort.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= cohort.name %></a>
+<h1 class="mt-2 font-display text-3xl font-extrabold text-ink">Students</h1>
+<p class="mt-1 text-sm text-slate-600"><%= total %> <%= total === 1 ? 'person' : 'people' %><%= q || status ? ' match your filters' : ' enrolled in total' %>.</p>
+
+<form method="get" class="mt-5 flex flex-wrap gap-3">
+  <input class="field max-w-xs" name="q" value="<%= q %>" placeholder="Search name or email" aria-label="Search students">
+  <select class="field max-w-[12rem]" name="status" aria-label="Filter by status">
+    <option value="">All statuses</option>
+    <% ['active', 'suspended', 'completed', 'removed'].forEach(function (s) { %><option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= labels.enrollment[s].text %></option><% }) %>
+  </select>
+  <button class="btn btn-ghost"><i class="fa-solid fa-magnifying-glass"></i>Filter</button>
+</form>
+
+<div class="panel mt-5 overflow-x-auto">
+  <table class="w-full min-w-[720px] text-left text-sm">
+    <thead class="border-b border-slate-200 text-xs font-semibold text-slate-500"><tr><th class="px-4 py-3">Student</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Level</th><th class="px-4 py-3">Joined through</th><th class="px-4 py-3">Enrolled</th><th class="px-4 py-3 text-right">Actions</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">
+      <% students.forEach(function (e) { %>
+      <tr>
+        <td class="px-4 py-3"><p class="font-semibold text-ink"><%= e.User.name %></p><p class="text-xs text-slate-500"><%= e.User.email %></p></td>
+        <td class="px-4 py-3"><span class="badge <%= labels.enrollment[e.status].tone %>"><%= labels.enrollment[e.status].text %></span><% if (e.statusNote) { %><p class="mt-1 max-w-xs text-xs text-slate-500"><%= e.statusNote %></p><% } %></td>
+        <td class="px-4 py-3"><% const lv = levels[e.userId]; %><% if (lv) { %><span class="badge bg-brand-soft text-brand-dark">Level <%= lv.level.n %> &middot; <%= lv.level.name %></span><p class="mt-1 text-xs text-slate-500"><%= lv.xp %> XP, <%= lv.attended %> sessions</p><% } %></td>
+        <td class="px-4 py-3 text-slate-600"><%= { free: 'Free enrollment', paid: 'Payment', scholarship: 'Scholarship offer', manual: 'Added by team' }[e.source] || e.source %></td>
+        <td class="px-4 py-3 text-xs text-slate-500"><%= fmtDate(e.enrolledAt) %></td>
+        <td class="px-4 py-3">
+          <div class="flex flex-col items-end gap-2">
+            <% if (e.status === 'suspended' || e.status === 'removed') { %>
+            <form method="post" action="/admin/cohorts/<%= cohort.id %>/students/<%= e.id %>/status"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="action" value="reactivate"><button class="btn btn-ghost btn-sm">Reactivate</button></form>
+            <% } %>
+            <% if (e.status === 'active' || e.status === 'completed') { %>
+            <details class="w-56 text-left">
+              <summary class="btn btn-ghost btn-sm cursor-pointer">Suspend or remove</summary>
+              <form method="post" action="/admin/cohorts/<%= cohort.id %>/students/<%= e.id %>/status" class="mt-2 space-y-2">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <select class="field py-1.5 text-sm" name="action" aria-label="Action"><option value="suspend">Suspend access</option><option value="remove">Remove from cohort</option></select>
+                <input class="field py-1.5 text-sm" name="note" maxlength="500" placeholder="Reason" aria-label="Reason" required>
+                <button class="btn btn-danger btn-sm">Apply</button>
+              </form>
+            </details>
+            <% } %>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+      <% if (!students.length) { %><tr><td colspan="6" class="px-4 py-10 text-center text-slate-500">No students match.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+
+<% if (pages > 1) { %>
+<nav class="mt-5 flex items-center justify-between text-sm" aria-label="Pagination">
+  <% const qs = function (p) { return '?page=' + p + (status ? '&status=' + encodeURIComponent(status) : '') + (q ? '&q=' + encodeURIComponent(q) : ''); }; %>
+  <% if (page > 1) { %><a class="btn btn-ghost btn-sm" href="<%= qs(page - 1) %>"><i class="fa-solid fa-chevron-left"></i>Previous</a><% } else { %><span></span><% } %>
+  <span class="text-slate-500">Page <%= page %> of <%= pages %></span>
+  <% if (page < pages) { %><a class="btn btn-ghost btn-sm" href="<%= qs(page + 1) %>">Next<i class="fa-solid fa-chevron-right"></i></a><% } else { %><span></span><% } %>
+</nav>
+<% } %>
+<%- include('../../partials/admin-bottom') %>

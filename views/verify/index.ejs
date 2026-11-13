@@ -1,0 +1,38 @@
+<%- include('../partials/header') %>
+<section class="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+  <h1 class="font-display text-3xl font-extrabold text-ink">Verify a certificate</h1>
+  <p class="mt-2 text-slate-600">Enter the code printed on a True Series Academy certificate to check that it is genuine.</p>
+
+  <form method="get" action="/verify" class="mt-6 flex flex-wrap gap-3">
+    <label class="sr-only" for="code">Certificate code</label>
+    <input class="field max-w-sm flex-1 font-mono uppercase" id="code" name="code" placeholder="TSA-XXXX-XXXX" value="<%= typed %>" autocomplete="off">
+    <button class="btn btn-primary"><i class="fa-solid fa-shield-halved"></i>Verify</button>
+  </form>
+
+  <% if (result) { %>
+    <% if (result.state === 'valid') { const c = result.certificate; %>
+    <div class="panel mt-8 border-emerald-300 p-6" role="status">
+      <p class="flex items-center gap-2 font-bold text-emerald-700"><i class="fa-solid fa-circle-check text-xl"></i>This certificate is genuine</p>
+      <dl class="mt-4 space-y-3 text-sm">
+        <div class="flex gap-3"><dt class="w-28 shrink-0 text-slate-500">Awarded to</dt><dd class="font-display text-lg font-extrabold text-ink"><%= c.recipientName %></dd></div>
+        <div class="flex gap-3"><dt class="w-28 shrink-0 text-slate-500">Program</dt><dd class="font-semibold text-ink"><%= c.programTitle %></dd></div>
+        <div class="flex gap-3"><dt class="w-28 shrink-0 text-slate-500">Cohort</dt><dd class="font-semibold text-ink"><%= c.cohortName %></dd></div>
+        <div class="flex gap-3"><dt class="w-28 shrink-0 text-slate-500">Completed</dt><dd class="font-semibold text-ink"><%= fmtDate(c.completedOn) %></dd></div>
+        <div class="flex gap-3"><dt class="w-28 shrink-0 text-slate-500">Issued</dt><dd class="font-semibold text-ink"><%= fmtDate(c.issuedAt) %></dd></div>
+        <div class="flex gap-3"><dt class="w-28 shrink-0 text-slate-500">Code</dt><dd class="font-mono font-semibold text-ink"><%= c.code %></dd></div>
+      </dl>
+    </div>
+    <% } else if (result.state === 'revoked') { %>
+    <div class="panel mt-8 border-rose-300 p-6" role="status">
+      <p class="flex items-center gap-2 font-bold text-rose-700"><i class="fa-solid fa-ban text-xl"></i>This certificate has been withdrawn</p>
+      <p class="mt-2 text-sm text-slate-600">The code exists, but True Series Academy withdrew the certificate on <%= fmtDate(result.certificate.revokedAt) %>. It should not be relied on.</p>
+    </div>
+    <% } else { %>
+    <div class="panel mt-8 border-amber-300 p-6" role="status">
+      <p class="flex items-center gap-2 font-bold text-amber-800"><i class="fa-solid fa-circle-question text-xl"></i>No certificate found</p>
+      <p class="mt-2 text-sm text-slate-600">We have no certificate with that code. Check for typos (codes look like TSA-K7PQ-2M9X) or contact the person who showed it to you.</p>
+    </div>
+    <% } %>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

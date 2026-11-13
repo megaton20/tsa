@@ -1,0 +1,54 @@
+<%- include('../../partials/admin-top') %>
+<a href="/admin/cohorts/<%= cohort.id %>/sessions" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i>Sessions</a>
+<h1 class="mt-2 font-display text-3xl font-extrabold text-ink"><%= isNew ? 'New session' : 'Edit session' %></h1>
+<p class="mt-1 text-sm text-slate-600"><%= program.title %> &middot; <%= cohort.name %>. Times are in Lagos time; students see them in their own time zone.</p>
+
+<form method="post" action="<%= isNew ? '/admin/cohorts/' + cohort.id + '/sessions' : '/admin/sessions/' + s.id %>" class="mt-6 max-w-3xl space-y-6" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../../partials/form-errors') %>
+
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Session</h2>
+    <div><label class="label" for="title">Title</label><input class="field" id="title" name="title" maxlength="160" required value="<%= s.title || '' %>"></div>
+    <div><label class="label" for="description">What it covers <span class="font-normal text-slate-400">(optional)</span></label><textarea class="field" id="description" name="description" rows="3"><%= s.description || '' %></textarea></div>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div><label class="label" for="startsAt">Starts (Lagos time)</label><input class="field" id="startsAt" name="startsAt" type="datetime-local" required value="<%= toLagosInput(s.startsAt) %>"></div>
+      <div><label class="label" for="durationMinutes">Length (minutes)</label><input class="field" id="durationMinutes" name="durationMinutes" type="number" min="15" max="600" value="<%= s.durationMinutes || 90 %>"></div>
+      <div><label class="label" for="joinOpensMinutesBefore">Joining opens (minutes before)</label><input class="field" id="joinOpensMinutesBefore" name="joinOpensMinutesBefore" type="number" min="0" max="180" value="<%= s.joinOpensMinutesBefore === undefined || s.joinOpensMinutesBefore === null ? 15 : s.joinOpensMinutesBefore %>"></div>
+    </div>
+    <% if (isNew) { %>
+    <div>
+      <label class="label" for="repeatWeeks">Repeat weekly for</label>
+      <select class="field max-w-xs" id="repeatWeeks" name="repeatWeeks">
+        <option value="1">Just this session</option>
+        <% [2, 3, 4, 5, 6, 8, 10, 12].forEach(function (n) { %><option value="<%= n %>"><%= n %> weeks (<%= n %> sessions)</option><% }) %>
+      </select>
+      <p class="hint">Titles get "(Week 1)", "(Week 2)" and so on. You can edit each one afterwards.</p>
+    </div>
+    <% } %>
+  </section>
+
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Meeting</h2>
+    <div>
+      <label class="label" for="meetLink">Google Meet or Zoom link</label>
+      <input class="field" id="meetLink" name="meetLink" placeholder="https://meet.google.com/abc-defg-hij" value="<%= s.meetLink || '' %>">
+      <p class="hint">Students never see this link on the page. Pressing Join records their attendance and then opens it. You can add it later; the system reminds the team when a session is close and has no link.</p>
+    </div>
+    <% if (leads.length) { %>
+    <div>
+      <label class="label" for="leadId">Led by <span class="font-normal text-slate-400">(optional)</span></label>
+      <select class="field max-w-sm" id="leadId" name="leadId">
+        <option value="">Not set</option>
+        <% leads.forEach(function (u) { %><option value="<%= u.id %>" <%= s.leadId === u.id ? 'selected' : '' %>><%= u.name %></option><% }) %>
+      </select>
+    </div>
+    <% } %>
+  </section>
+
+  <div class="flex gap-3">
+    <button class="btn btn-primary btn-lg"><%= isNew ? 'Schedule' : 'Save changes' %></button>
+    <a href="/admin/cohorts/<%= cohort.id %>/sessions" class="btn btn-ghost btn-lg">Cancel</a>
+  </div>
+</form>
+<%- include('../../partials/admin-bottom') %>

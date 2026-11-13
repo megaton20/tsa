@@ -1,0 +1,7 @@
+<% if (typeof errors !== 'undefined' && errors && errors.length) { %>
+<div class="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-800" role="alert">
+  <ul class="space-y-1">
+    <% errors.forEach(function (e) { %><li class="flex gap-2"><i class="fa-solid fa-circle-exclamation mt-0.5"></i><span><%= e %></span></li><% }) %>
+  </ul>
+</div>
+<% } %>

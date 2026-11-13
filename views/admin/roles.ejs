@@ -1,0 +1,79 @@
+<%- include('../partials/admin-top') %>
+<h1 class="font-display text-3xl font-extrabold text-ink">Roles and permissions</h1>
+<p class="mt-1 max-w-2xl text-sm text-slate-600">A role is a bundle of permissions. You can only grant permissions you hold yourself. Superadmin always has everything.</p>
+
+<div class="mt-6 space-y-5">
+  <% roles.forEach(function (r) { %>
+  <section class="panel p-6">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h2 class="font-bold text-ink"><%= r.name %> <% if (r.isSystem) { %><span class="badge ml-1 bg-slate-100 text-slate-600">Built in</span><% } %> <span class="badge ml-1 <%= r.scope === 'program' ? 'bg-brand-soft text-brand-dark' : 'bg-slate-100 text-slate-600' %>"><%= r.scope === 'program' ? 'Per program' : 'Whole platform' %></span></h2>
+        <p class="text-sm text-slate-600"><%= counts[r.id] %> <%= counts[r.id] === 1 ? 'person' : 'people' %></p>
+      </div>
+    </div>
+    <% if (r.slug === 'superadmin') { %>
+      <p class="mt-4 rounded-xl bg-brand-soft p-3 text-sm text-ink"><i class="fa-solid fa-infinity mr-2"></i>Has every permission, including ones added later. This role cannot be edited.</p>
+    <% } else { %>
+    <form method="post" action="/admin/roles/<%= r.id %>" class="mt-4 space-y-5">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="name-<%= r.id %>">Name</label><input class="field" id="name-<%= r.id %>" name="name" value="<%= r.name %>" maxlength="80"></div>
+        <div><label class="label" for="desc-<%= r.id %>">Description</label><input class="field" id="desc-<%= r.id %>" name="description" value="<%= r.description || '' %>" maxlength="255"></div>
+      </div>
+      <% groups.forEach(function (g) { %>
+      <fieldset>
+        <legend class="mb-2 text-sm font-bold text-ink"><%= g.label %></legend>
+        <div class="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+          <% Object.keys(g.items).forEach(function (p) { const granted = canGrant(p); %>
+          <label class="flex items-start gap-2.5 text-sm <%= granted ? '' : 'opacity-50' %>">
+            <input class="mt-1" type="checkbox" name="permissions" value="<%= p %>" <%= (r.permissions || []).includes(p) ? 'checked' : '' %> <%= granted ? '' : 'disabled' %>>
+            <span><%= g.items[p] %></span>
+          </label>
+          <% }) %>
+        </div>
+      </fieldset>
+      <% }) %>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-primary btn-sm">Save <%= r.name %></button>
+      </div>
+    </form>
+    <% if (!r.isSystem) { %>
+    <form method="post" action="/admin/roles/<%= r.id %>/delete" data-confirm="Delete the role <%= r.name %>?" class="mt-2">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i>Delete role</button>
+    </form>
+    <% } %>
+    <% } %>
+  </section>
+  <% }) %>
+
+  <section class="panel p-6">
+    <h2 class="font-bold text-ink">Create a role</h2>
+    <form method="post" action="/admin/roles" class="mt-4 space-y-5">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="new-name">Name</label><input class="field" id="new-name" name="name" maxlength="80" required placeholder="Mentor"></div>
+        <div><label class="label" for="new-desc">Description</label><input class="field" id="new-desc" name="description" maxlength="255"></div>
+        <div>
+          <label class="label" for="new-scope">Applies to</label>
+          <select class="field" id="new-scope" name="scope">
+            <option value="program">One program at a time (assigned on a program's Team page)</option>
+            <option value="global">The whole platform</option>
+          </select>
+        </div>
+      </div>
+      <% groups.forEach(function (g) { %>
+      <fieldset>
+        <legend class="mb-2 text-sm font-bold text-ink"><%= g.label %></legend>
+        <div class="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+          <% Object.keys(g.items).forEach(function (p) { const granted = canGrant(p); %>
+          <label class="flex items-start gap-2.5 text-sm <%= granted ? '' : 'opacity-50' %>"><input class="mt-1" type="checkbox" name="permissions" value="<%= p %>" <%= granted ? '' : 'disabled' %>><span><%= g.items[p] %></span></label>
+          <% }) %>
+        </div>
+      </fieldset>
+      <% }) %>
+      <button class="btn btn-primary"><i class="fa-solid fa-plus"></i>Create role</button>
+    </form>
+  </section>
+</div>
+<%- include('../partials/admin-bottom') %>

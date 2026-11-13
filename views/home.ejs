@@ -1,0 +1,200 @@
+<%- include('partials/header') %>
+<%
+  const ctaIcon = { details: 'fa-solid fa-circle-info', whatsapp: 'fa-brands fa-whatsapp', telegram: 'fa-brands fa-telegram', custom: 'fa-solid fa-arrow-up-right-from-square' };
+  const external = function (t) { return t === 'whatsapp' || t === 'telegram'; };
+%>
+
+<h1 class="sr-only">True Series Academy: cohort programs with live sessions and certificates</h1>
+
+<% if (slides.length) { %>
+<section data-slider class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8" aria-roledescription="carousel" aria-label="Programs">
+  <div class="relative overflow-hidden rounded-3xl bg-ink">
+    <div class="relative aspect-[4/3] sm:aspect-[21/9]" aria-live="off">
+      <% slides.forEach(function (s, i) { %>
+      <article data-slide class="absolute inset-0 transition-opacity duration-500 <%= i === 0 ? 'opacity-100' : 'pointer-events-none opacity-0' %>" <%= i === 0 ? '' : 'inert' %> aria-hidden="<%= i !== 0 %>" role="group" aria-roledescription="slide" aria-label="<%= i + 1 %> of <%= slides.length %>">
+        <% if (s.imageUrl) { %>
+          <img src="<%= s.imageUrl %>" alt="<%= s.textOverlay ? '' : s.title %>" class="h-full w-full object-cover" <%- i > 0 ? 'loading="lazy"' : '' %>>
+        <% } else { %>
+          <div class="h-full w-full bg-gradient-to-br from-ink via-[#0E5A3C] to-brand"></div>
+        <% } %>
+        <% if (s.textOverlay) { %><div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent"></div><% } %>
+        <div class="absolute inset-x-0 bottom-0 flex flex-col items-start gap-3 p-5 sm:p-8 lg:p-10">
+          <% if (s.textOverlay) { %>
+            <% if (s.badge) { %><span class="rounded-full bg-sun px-3 py-1 text-xs font-bold text-ink"><%= s.badge %></span><% } %>
+            <h2 class="max-w-2xl font-display text-2xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl"><%= s.title %></h2>
+            <% if (s.subtitle) { %><p class="max-w-xl text-sm text-white/85 sm:text-base"><%= s.subtitle %></p><% } %>
+          <% } %>
+          <% if (s.ctaUrl) { %>
+            <a href="<%= s.ctaUrl %>" class="btn btn-sun btn-lg" <%- external(s.ctaType) ? 'target="_blank" rel="noopener"' : '' %>>
+              <i class="<%= ctaIcon[s.ctaType] || ctaIcon.custom %>"></i><%= s.ctaLabel || 'Learn more' %><% if (!s.textOverlay) { %><span class="sr-only">: <%= s.title %></span><% } %>
+            </a>
+          <% } %>
+        </div>
+      </article>
+      <% }) %>
+    </div>
+    <% if (slides.length > 1) { %>
+    <div class="absolute right-3 top-3 flex gap-2 sm:right-4 sm:top-4">
+      <button type="button" data-play class="grid h-9 w-9 place-items-center rounded-full bg-ink/60 text-white backdrop-blur hover:bg-ink/80" aria-label="Pause slideshow"><i class="fa-solid fa-pause"></i></button>
+      <button type="button" data-prev class="grid h-9 w-9 place-items-center rounded-full bg-ink/60 text-white backdrop-blur hover:bg-ink/80" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+      <button type="button" data-next class="grid h-9 w-9 place-items-center rounded-full bg-ink/60 text-white backdrop-blur hover:bg-ink/80" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+    <% } %>
+  </div>
+
+  <% if (slides.length > 1) { %>
+  <div class="tsa-rail mt-3 grid grid-flow-col auto-cols-[minmax(190px,1fr)] gap-2 overflow-x-auto pb-1">
+    <% slides.forEach(function (s, i) { %>
+    <button type="button" data-tab class="relative rounded-xl border border-slate-200 bg-white px-4 pb-3 pt-4 text-left hover:border-brand/40 <%= i === 0 ? 'is-active' : '' %>" aria-current="<%= i === 0 %>">
+      <span class="absolute inset-x-0 top-0 h-1 overflow-hidden rounded-t-xl bg-slate-200"><span data-bar></span></span>
+      <span class="block truncate text-sm font-bold text-ink"><%= s.title %></span>
+      <span class="mt-0.5 block truncate text-xs text-slate-500"><i class="<%= ctaIcon[s.ctaType] || ctaIcon.custom %> mr-1"></i><%= s.badge || s.ctaLabel || 'Program' %></span>
+    </button>
+    <% }) %>
+  </div>
+  <% } %>
+</section>
+<% } else { %>
+<section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+  <div class="relative overflow-hidden rounded-3xl bg-ink px-6 py-14 sm:px-12 sm:py-20 lg:py-24">
+    <div class="pointer-events-none absolute -right-24 top-1/2 hidden h-[28rem] w-[28rem] -translate-y-1/2 rounded-full border border-white/10 lg:block"></div>
+    <div class="pointer-events-none absolute -right-8 top-1/2 hidden h-72 w-72 -translate-y-1/2 rounded-full border border-white/10 lg:block"></div>
+    <div class="pointer-events-none absolute right-16 top-1/2 hidden h-24 w-24 -translate-y-1/2 rounded-full bg-sun lg:block"></div>
+    <div class="relative max-w-2xl">
+      <p class="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-sun"><i class="fa-solid fa-seedling"></i>New cohorts open throughout the year</p>
+      <h2 class="font-display text-4xl font-extrabold leading-[1.05] text-white sm:text-6xl">Join a cohort. Learn live. Finish with a certificate.</h2>
+      <p class="mt-5 max-w-xl text-lg leading-relaxed text-slate-300">Small groups, scheduled live sessions and a community that keeps you going. Many cohorts are sponsored, so the seat costs little or nothing.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <% if (currentUser) { %>
+          <a href="/dashboard" class="btn btn-sun btn-lg"><i class="fa-solid fa-table-columns"></i>Go to your dashboard</a>
+        <% } else { %>
+          <a href="/register" class="btn btn-sun btn-lg"><i class="fa-solid fa-user-plus"></i>Create a free account</a>
+        <% } %>
+        <a href="#how" class="btn btn-lg border-white/25 text-white hover:bg-white/10">See how it works</a>
+      </div>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (featured && featured.length) { %>
+<section class="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8" id="programs">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <h2 class="font-display text-3xl font-extrabold text-ink sm:text-4xl">Programs you can join</h2>
+    <a href="/programs" class="btn btn-ghost">See all programs</a>
+  </div>
+  <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <% featured.forEach(function (item) { %><%- include('partials/program-card', { item: item }) %><% }) %>
+  </div>
+</section>
+<% } %>
+
+<!-- How it works -->
+<section id="how" class="mx-auto max-w-7xl scroll-mt-20 px-4 pb-20 pt-16 sm:px-6 lg:px-8">
+  <h2 class="max-w-2xl font-display text-3xl font-extrabold text-ink sm:text-4xl">From sign-up to certificate in four steps</h2>
+  <ol class="mt-10 grid gap-8 md:grid-cols-4">
+    <% [
+      { n: 1, icon: 'fa-user-plus', t: 'Create your account', d: 'Verify your email, or continue with Google. Then join the community channel so you hear about new cohorts first.' },
+      { n: 2, icon: 'fa-compass', t: 'Pick a cohort', d: 'Open a program to see the schedule. Some cohorts enroll you straight away, others ask for a short application or a payment.' },
+      { n: 3, icon: 'fa-video', t: 'Join sessions from the site', d: 'On session day, open the session and press Join. That click records your attendance and takes you to the meeting.' },
+      { n: 4, icon: 'fa-award', t: 'Collect your certificate', d: 'Meet the attendance rule for your program and your certificate is issued with a code anyone can verify.' }
+    ].forEach(function (s) { %>
+    <li class="border-t-2 border-ink pt-5">
+      <div class="flex items-center justify-between">
+        <span class="font-display text-4xl font-extrabold text-brand"><%= s.n %></span>
+        <i class="fa-solid <%= s.icon %> text-xl text-slate-400"></i>
+      </div>
+      <h3 class="mt-4 text-lg font-bold text-ink"><%= s.t %></h3>
+      <p class="mt-2 text-sm leading-relaxed text-slate-600"><%= s.d %></p>
+    </li>
+    <% }) %>
+  </ol>
+</section>
+
+<!-- Scholarships -->
+<section id="scholarships" class="scroll-mt-20 bg-ink">
+  <div class="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-5 lg:px-8">
+    <div class="lg:col-span-2">
+      <h2 class="font-display text-3xl font-extrabold text-white sm:text-4xl">Many cohorts are sponsored</h2>
+      <p class="mt-4 max-w-md leading-relaxed text-slate-300">Scholarship cohorts cover most or all of the program fee. Seats are limited, so the process is quick, clear and the same for everyone.</p>
+      <% if (!currentUser) { %><a href="/register" class="btn btn-sun btn-lg mt-8"><i class="fa-solid fa-user-plus"></i>Create a free account</a><% } %>
+    </div>
+    <ul class="space-y-6 lg:col-span-3">
+      <% [
+        { icon: 'fa-pen-to-square', t: 'Apply and take a short quiz', d: 'Tell us a little about yourself, then answer a few questions. Unless a program says otherwise, you do not need prior experience.' },
+        { icon: 'fa-envelope-open-text', t: 'Get your offer by email', d: 'Applicants who reach the pass mark receive an offer automatically. Close calls are looked at by the program manager.' },
+        { icon: 'fa-clock', t: 'Confirm your seat before the deadline', d: 'Where a seat fee applies, pay it by the deadline. Unclaimed seats move to the next person on the waitlist.' }
+      ].forEach(function (s) { %>
+      <li class="flex gap-4 border-b border-white/10 pb-6 last:border-0 last:pb-0">
+        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/10 text-sun"><i class="fa-solid <%= s.icon %>"></i></span>
+        <div>
+          <h3 class="font-bold text-white"><%= s.t %></h3>
+          <p class="mt-1 text-sm leading-relaxed text-slate-300"><%= s.d %></p>
+        </div>
+      </li>
+      <% }) %>
+    </ul>
+  </div>
+</section>
+
+<!-- What you get -->
+<section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+  <div class="grid gap-12 lg:grid-cols-5">
+    <div class="lg:col-span-2">
+      <h2 class="font-display text-3xl font-extrabold text-ink sm:text-4xl">What you get with every cohort</h2>
+      <p class="mt-4 max-w-md leading-relaxed text-slate-600">Programs are run by their own team, with a manager who keeps the cohort on track.</p>
+    </div>
+    <dl class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:col-span-3">
+      <% [
+        { icon: 'fa-video', t: 'Live sessions', d: 'Scheduled in your own time zone and held on Google Meet.' },
+        { icon: 'fa-circle-play', t: 'Session recordings', d: 'Catch up on anything you missed, inside your program.' },
+        { icon: 'fa-award', t: 'A verifiable certificate', d: 'Your name, the program and a unique code anyone can check.' },
+        { icon: 'fa-people-group', t: 'A community around you', d: 'WhatsApp and Telegram groups with classmates and mentors.' }
+      ].forEach(function (s) { %>
+      <div class="flex gap-4">
+        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand"><i class="fa-solid <%= s.icon %>"></i></span>
+        <div>
+          <dt class="font-bold text-ink"><%= s.t %></dt>
+          <dd class="mt-1 text-sm leading-relaxed text-slate-600"><%= s.d %></dd>
+        </div>
+      </div>
+      <% }) %>
+    </dl>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="mx-auto max-w-3xl scroll-mt-20 px-4 pb-20 sm:px-6">
+  <h2 class="font-display text-3xl font-extrabold text-ink sm:text-4xl">Questions people ask</h2>
+  <div class="mt-8 divide-y divide-slate-200 border-y border-slate-200">
+    <% [
+      { q: 'Are all programs free?', a: 'No. Some are free to join, some are paid, and many scholarship cohorts ask for a small seat fee or none at all. Every program page shows exactly what applies.' },
+      { q: 'How is my attendance recorded?', a: 'On session day, open the session from your dashboard and press Join. That click is logged, then sends you to the meeting. Joining through the site is required so moderators can check who to let in.' },
+      { q: 'What time will sessions show?', a: 'Sessions are shown in your own time zone, which we detect from your browser.' },
+      { q: 'Can I sign in with Google?', a: 'Yes. If you created your account with Google, keep using Continue with Google. If you signed up with email and a password, use those. If you pick the wrong method, we tell you which one to use.' },
+      { q: 'What if I miss a session?', a: 'Recordings are added for enrolled students. Your certificate depends on the attendance rule set for your program, so check it before you enroll.' },
+      { q: 'How do I get my certificate?', a: 'Finish the program and meet its attendance rule. Your certificate appears in your dashboard with a code that anyone can use to verify it.' }
+    ].forEach(function (f) { %>
+    <details class="faq py-5">
+      <summary class="flex items-center justify-between gap-4 text-left font-bold text-ink">
+        <span><%= f.q %></span><i class="fa-solid fa-plus shrink-0 text-brand"></i>
+      </summary>
+      <p class="mt-3 max-w-2xl leading-relaxed text-slate-600"><%= f.a %></p>
+    </details>
+    <% }) %>
+  </div>
+</section>
+
+<% if (!currentUser) { %>
+<section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col items-start justify-between gap-6 rounded-3xl bg-brand px-8 py-12 sm:flex-row sm:items-center">
+    <div>
+      <h2 class="font-display text-3xl font-extrabold text-white">Your next cohort starts with an account</h2>
+      <p class="mt-2 text-white/85">It takes a minute, and it is free.</p>
+    </div>
+    <a href="/register" class="btn btn-sun btn-lg shrink-0"><i class="fa-solid fa-user-plus"></i>Create account</a>
+  </div>
+</section>
+<% } %>
+
+<%- include('partials/footer') %>

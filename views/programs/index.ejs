@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <h1 class="font-display text-4xl font-extrabold text-ink">Programs</h1>
+  <p class="mt-2 max-w-2xl text-slate-600">Pick a program, then a cohort. Each cohort shows what it costs, any scholarship, and how to get in.</p>
+
+  <form method="get" class="mt-6 flex flex-wrap gap-3">
+    <input class="field max-w-sm" name="q" value="<%= q %>" placeholder="Search programs" aria-label="Search programs">
+    <% if (categories.length) { %>
+    <select class="field max-w-[14rem]" name="category" aria-label="Category">
+      <option value="">All categories</option>
+      <% categories.forEach(function (c) { %><option value="<%= c %>" <%= category === c ? 'selected' : '' %>><%= c %></option><% }) %>
+    </select>
+    <% } %>
+    <button class="btn btn-ghost"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
+    <% if (q || category) { %><a href="/programs" class="btn btn-ghost">Clear</a><% } %>
+  </form>
+
+  <% if (!items.length) { %>
+  <div class="panel mt-8 px-6 py-16 text-center">
+    <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand"><i class="fa-solid fa-book-open"></i></span>
+    <p class="mt-3 font-semibold text-ink"><%= q || category ? 'No programs match your search' : 'No programs are open yet' %></p>
+    <p class="mx-auto mt-1 max-w-sm text-sm text-slate-600"><%= q || category ? 'Try a different word or clear the filters.' : 'Join the community to hear first when new cohorts open.' %></p>
+  </div>
+  <% } else { %>
+  <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <% items.forEach(function (item) { %><%- include('../partials/program-card', { item: item }) %><% }) %>
+  </div>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

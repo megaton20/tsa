@@ -1,0 +1,46 @@
+<%- include('../partials/header') %>
+<section class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+  <a href="/programs/<%= cohort.Program.slug %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= cohort.Program.title %></a>
+  <h1 class="mt-3 font-display text-3xl font-extrabold text-ink">Apply to <%= cohort.name %></h1>
+  <p class="mt-1 text-slate-600"><%= cohort.Program.title %></p>
+  <div class="mt-6"><%- include('../partials/apply-steps', { step: 1 }) %></div>
+
+  <form method="post" action="/cohorts/<%= cohort.id %>/apply" class="panel space-y-5 p-6" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <%- include('../partials/form-errors') %>
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <label class="label" for="phone">Phone number</label>
+        <input class="field" id="phone" name="phone" type="tel" autocomplete="tel" required value="<%= details.phone || '' %>">
+      </div>
+      <div>
+        <label class="label" for="state">State or country</label>
+        <input class="field" id="state" name="state" required value="<%= details.state || '' %>">
+      </div>
+    </div>
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <label class="label" for="education">Education level</label>
+        <select class="field" id="education" name="education" required>
+          <option value="">Choose one</option>
+          <% education.forEach(function (e) { %><option value="<%= e %>" <%= details.education === e ? 'selected' : '' %>><%= e %></option><% }) %>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="occupation">What do you do now? <span class="font-normal text-slate-400">(optional)</span></label>
+        <input class="field" id="occupation" name="occupation" value="<%= details.occupation || '' %>">
+      </div>
+    </div>
+    <div>
+      <label class="label" for="motivation">Why do you want to join?</label>
+      <textarea class="field" id="motivation" name="motivation" rows="5" maxlength="1200" required><%= details.motivation || '' %></textarea>
+      <p class="hint">A few honest sentences are enough.</p>
+    </div>
+    <p class="rounded-xl bg-brand-soft p-3 text-sm text-ink">
+      <% if (questionCount > 0) { %><i class="fa-solid fa-circle-info mr-1"></i>Next is a short quiz with <%= questionCount %> <%= questionCount === 1 ? 'question' : 'questions' %>. You can take it once, so set aside a few quiet minutes.
+      <% } else { %><i class="fa-solid fa-circle-info mr-1"></i>There is no quiz for this program. The program team reviews applications personally.<% } %>
+    </p>
+    <button class="btn btn-primary btn-lg"><%= questionCount > 0 ? 'Save and continue to the quiz' : 'Submit application' %></button>
+  </form>
+</section>
+<%- include('../partials/footer') %>

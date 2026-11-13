@@ -1,0 +1,9 @@
+<ol class="mb-8 flex items-center gap-3 text-sm font-semibold" aria-label="Application steps">
+  <% [['Your details', 1], ['Short quiz', 2], ['Result', 3]].forEach(function (s) { const on = s[1] === step; const done = s[1] < step; %>
+  <li class="flex items-center gap-2 <%= on ? 'text-ink' : (done ? 'text-emerald-700' : 'text-slate-400') %>" <%- on ? 'aria-current="step"' : '' %>>
+    <span class="grid h-7 w-7 place-items-center rounded-full text-xs font-bold <%= on ? 'bg-ink text-white' : (done ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500') %>"><% if (done) { %><i class="fa-solid fa-check"></i><% } else { %><%= s[1] %><% } %></span>
+    <span class="hidden sm:inline"><%= s[0] %></span>
+  </li>
+  <% if (s[1] < 3) { %><li aria-hidden="true" class="h-px w-6 bg-slate-300 sm:w-10"></li><% } %>
+  <% }) %>
+</ol>

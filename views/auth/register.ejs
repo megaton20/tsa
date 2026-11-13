@@ -1,0 +1,38 @@
+<%- include('../partials/auth-top') %>
+<h1 class="font-display text-3xl font-extrabold text-ink">Create your account</h1>
+<p class="mt-1 text-sm text-slate-600">One account for every cohort you join.</p>
+
+<div class="mt-6">
+  <%- include('../partials/form-errors') %>
+  <% if (googleEnabled) { %>
+  <a href="/auth/google" class="btn btn-ghost w-full justify-center py-3"><i class="fa-brands fa-google"></i>Sign up with Google</a>
+  <div class="my-5 flex items-center gap-3 text-xs text-slate-400"><span class="h-px flex-1 bg-slate-200"></span>or use your email<span class="h-px flex-1 bg-slate-200"></span></div>
+  <% } %>
+  <form method="post" action="/register" class="space-y-4" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div>
+      <label class="label" for="name">Full name</label>
+      <input class="field" id="name" name="name" autocomplete="name" required value="<%= form.name || '' %>">
+      <p class="hint">This name appears on your certificate.</p>
+    </div>
+    <div>
+      <label class="label" for="email">Email</label>
+      <input class="field" id="email" name="email" type="email" autocomplete="email" required value="<%= form.email || '' %>">
+    </div>
+    <div>
+      <label class="label" for="password">Password</label>
+      <div class="relative">
+        <input class="field pr-11" id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+        <button type="button" data-toggle-password="password" class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-slate-700" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
+      </div>
+      <p class="hint">At least 8 characters.</p>
+    </div>
+    <div>
+      <label class="label" for="confirm">Confirm password</label>
+      <input class="field" id="confirm" name="confirm" type="password" autocomplete="new-password" required>
+    </div>
+    <button class="btn btn-primary w-full justify-center py-3">Create account</button>
+  </form>
+  <p class="mt-6 text-center text-sm text-slate-600">Already have an account? <a class="font-semibold text-brand hover:underline" href="/login">Sign in</a></p>
+</div>
+<%- include('../partials/auth-bottom') %>

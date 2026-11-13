@@ -1,0 +1,54 @@
+<%- include('../partials/header') %>
+<% const s = app.status; const tone = labels.application[s]; %>
+<section class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+  <a href="/programs/<%= cohort.Program.slug %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= cohort.Program.title %></a>
+  <h1 class="mt-3 font-display text-3xl font-extrabold text-ink">Your application</h1>
+  <p class="mt-1 text-slate-600"><%= cohort.Program.title %> &middot; <%= cohort.name %></p>
+  <div class="mt-6"><%- include('../partials/apply-steps', { step: 3 }) %></div>
+
+  <div class="panel p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <span class="badge <%= tone.tone %>"><%= tone.text %></span>
+      <% if (app.scorePercent !== null && app.scorePercent !== undefined) { %><span class="text-sm text-slate-600">Quiz score: <strong class="text-ink"><%= app.scorePercent %>%</strong></span><% } %>
+    </div>
+
+    <% if (s === 'offered') { %>
+      <h2 class="mt-5 font-display text-2xl font-extrabold text-ink">You have a seat</h2>
+      <p class="mt-2 leading-relaxed text-slate-600">Accept it by <strong class="text-ink"><%= fmtDateTime(app.offerExpiresAt) %></strong>. After that, the seat goes to the next person on the list.</p>
+      <div class="mt-4 rounded-xl bg-chalk p-4 text-sm">
+        <% if (cohort.fullFeeKobo > 0 && cohort.scholarshipPercent > 0) { %><p class="flex flex-wrap items-center gap-2"><s class="text-slate-400"><%= naira(cohort.fullFeeKobo) %></s><span class="badge bg-emerald-50 text-emerald-700"><%= cohort.scholarshipPercent %>% scholarship</span></p><% } %>
+        <p class="mt-1 font-bold text-ink"><%= payable ? 'Seat fee to confirm: ' + naira(payable) : 'Nothing to pay. Accept to confirm your seat.' %></p>
+      </div>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <form method="post" action="/cohorts/<%= cohort.id %>/application/accept"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-primary btn-lg"><i class="fa-solid <%= payable ? 'fa-credit-card' : 'fa-check' %>"></i><%= payable ? 'Pay ' + naira(payable) + ' and confirm' : 'Accept my seat' %></button></form>
+        <form method="post" action="/cohorts/<%= cohort.id %>/application/withdraw" data-confirm="Give up this seat? It will go to someone else."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-ghost btn-lg">Decline</button></form>
+      </div>
+    <% } else if (s === 'in_review') { %>
+      <h2 class="mt-5 font-display text-2xl font-extrabold text-ink">Under review</h2>
+      <p class="mt-2 leading-relaxed text-slate-600"><%= app.reviewReason === 'grace' ? 'Your score is close to the pass mark, so the program manager will look at your application personally.' : 'The program team reviews applications personally.' %> We will email you with the result.</p>
+    <% } else if (s === 'waitlisted') { %>
+      <h2 class="mt-5 font-display text-2xl font-extrabold text-ink">You are on the waiting list</h2>
+      <p class="mt-2 leading-relaxed text-slate-600">You qualified, but every seat is taken for now. If one opens, we will email you with an offer.</p>
+    <% } else if (s === 'not_selected') { %>
+      <h2 class="mt-5 font-display text-2xl font-extrabold text-ink">Not selected this time</h2>
+      <p class="mt-2 leading-relaxed text-slate-600">Thank you for applying. We run new cohorts regularly, and you are welcome to apply again.</p>
+    <% } else if (s === 'accepted') { %>
+      <h2 class="mt-5 font-display text-2xl font-extrabold text-ink">Your seat is confirmed</h2>
+      <p class="mt-2 text-slate-600">You are part of this cohort.</p>
+    <% } else if (s === 'expired') { %>
+      <h2 class="mt-5 font-display text-2xl font-extrabold text-ink">This offer expired</h2>
+      <p class="mt-2 leading-relaxed text-slate-600">The time to accept ran out and the seat was released. Contact support if you still want a place<%= settings.supportEmail ? ' at ' + settings.supportEmail : '' %>.</p>
+    <% } else { %>
+      <h2 class="mt-5 font-display text-2xl font-extrabold text-ink"><%= tone.text %></h2>
+    <% } %>
+  </div>
+
+  <div class="mt-6 flex flex-wrap gap-3">
+    <% if (enrollment) { %><a class="btn btn-primary" href="/cohorts/<%= cohort.id %>"><i class="fa-solid fa-door-open"></i>Open your cohort</a><% } %>
+    <% if (['in_review', 'waitlisted'].includes(s)) { %>
+    <form method="post" action="/cohorts/<%= cohort.id %>/application/withdraw" data-confirm="Withdraw your application?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-ghost">Withdraw application</button></form>
+    <% } %>
+    <a class="btn btn-ghost" href="/dashboard">Back to dashboard</a>
+  </div>
+</section>
+<%- include('../partials/footer') %>

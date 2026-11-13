@@ -1,0 +1,49 @@
+<header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/90 backdrop-blur">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+    <a href="/" class="flex items-center gap-2.5" aria-label="<%= appName %> home">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-ink text-sun"><i class="fa-solid fa-graduation-cap"></i></span>
+      <span class="font-display text-lg font-extrabold tracking-tight text-ink">True Series Academy</span>
+    </a>
+    <nav class="hidden items-center gap-7 text-sm font-semibold text-slate-600 md:flex" aria-label="Main">
+      <a class="hover:text-brand" href="/programs">Programs</a>
+      <a class="hover:text-brand" href="/#how">How it works</a>
+      <a class="hover:text-brand" href="/#scholarships">Scholarships</a>
+      <a class="hover:text-brand" href="/#faq">FAQ</a>
+    </nav>
+    <div class="hidden items-center gap-3 md:flex">
+      <% if (currentUser) { %>
+        <% if (canAdmin) { %><a href="/admin" class="btn btn-ghost"><i class="fa-solid fa-gauge-high"></i>Admin</a><% } %>
+        <a href="/dashboard" class="btn btn-ghost"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
+        <form method="post" action="/logout">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn-ghost" title="Sign out"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="sr-only">Sign out</span></button>
+        </form>
+      <% } else { %>
+        <a href="/login" class="btn btn-ghost">Sign in</a>
+        <a href="/register" class="btn btn-primary">Create account</a>
+      <% } %>
+    </div>
+    <button type="button" data-menu-toggle class="grid h-10 w-10 place-items-center rounded-lg text-ink hover:bg-slate-100 md:hidden" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+  <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white md:hidden">
+    <div class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3 text-sm font-semibold">
+      <a class="rounded-lg px-3 py-2.5 hover:bg-slate-50" href="/programs">Programs</a>
+      <a class="rounded-lg px-3 py-2.5 hover:bg-slate-50" href="/#how">How it works</a>
+      <a class="rounded-lg px-3 py-2.5 hover:bg-slate-50" href="/#scholarships">Scholarships</a>
+      <a class="rounded-lg px-3 py-2.5 hover:bg-slate-50" href="/#faq">FAQ</a>
+      <% if (currentUser) { %>
+        <% if (canAdmin) { %><a class="rounded-lg px-3 py-2.5 hover:bg-slate-50" href="/admin">Admin</a><% } %>
+        <a class="rounded-lg px-3 py-2.5 hover:bg-slate-50" href="/dashboard">Dashboard</a>
+        <form method="post" action="/logout">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="w-full rounded-lg px-3 py-2.5 text-left hover:bg-slate-50">Sign out</button>
+        </form>
+      <% } else { %>
+        <a class="rounded-lg px-3 py-2.5 hover:bg-slate-50" href="/login">Sign in</a>
+        <a class="btn btn-primary mt-1 justify-center" href="/register">Create account</a>
+      <% } %>
+    </div>
+  </div>
+</header>

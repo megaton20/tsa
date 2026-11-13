@@ -1,0 +1,80 @@
+<%- include('../../partials/admin-top') %>
+<a href="/admin/programs" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i>Programs</a>
+<div class="mt-2 flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <h1 class="font-display text-3xl font-extrabold text-ink"><%= program.title %></h1>
+    <p class="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600"><span class="badge <%= labels.program[program.status].tone %>"><%= labels.program[program.status].text %></span><% if (program.category) { %><span><%= program.category %></span><% } %></p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a class="btn btn-ghost btn-sm" href="/programs/<%= program.slug %>" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i>View page</a>
+    <% if (canP('programs.edit')) { %><a class="btn btn-ghost btn-sm" href="/admin/programs/<%= program.id %>/edit"><i class="fa-solid fa-pen"></i>Edit</a><% } %>
+    <% if (canP('staff.manage')) { %><a class="btn btn-ghost btn-sm" href="/admin/programs/<%= program.id %>/team"><i class="fa-solid fa-user-group"></i>Team</a><% } %>
+    <% if (canP('cohorts.manage')) { %><a class="btn btn-ghost btn-sm" href="/admin/programs/<%= program.id %>/quiz"><i class="fa-solid fa-clipboard-question"></i>Quiz (<%= questionCount %>)</a><% } %>
+  </div>
+</div>
+
+<% if (canP('programs.edit')) { %>
+<div class="panel mt-6 flex flex-wrap items-center gap-3 p-4 text-sm">
+  <span class="font-semibold text-ink">Visibility</span>
+  <% [['published', 'Publish', 'fa-globe'], ['draft', 'Move to draft', 'fa-eye-slash'], ['suspended', 'Suspend', 'fa-pause'], ['archived', 'Archive', 'fa-box-archive']].forEach(function (a) {
+       const globalOnly = a[0] === 'suspended' || a[0] === 'archived';
+       if (program.status === a[0] || (globalOnly && !can('programs.manage'))) return; %>
+  <form method="post" action="/admin/programs/<%= program.id %>/status" <%- globalOnly ? 'data-confirm="Change this program to ' + a[0] + '?"' : '' %>>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="<%= a[0] %>">
+    <button class="btn btn-ghost btn-sm"><i class="fa-solid <%= a[2] %>"></i><%= a[1] %></button>
+  </form>
+  <% }) %>
+  <% if (can('programs.manage')) { %>
+  <form method="post" action="/admin/programs/<%= program.id %>/delete" class="ml-auto" data-confirm="Delete this program? This cannot be undone."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i>Delete</button></form>
+  <% } %>
+</div>
+<% } %>
+
+<section class="mt-8">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 class="font-display text-2xl font-extrabold text-ink">Cohorts</h2>
+    <% if (canP('cohorts.manage')) { %><a href="/admin/programs/<%= program.id %>/cohorts/new" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i>New cohort</a><% } %>
+  </div>
+  <% if (!rows.length) { %>
+  <div class="panel mt-4 px-6 py-12 text-center text-sm text-slate-600">No cohorts yet. A cohort is one run of this program, with its own dates, seats and fee.</div>
+  <% } else { %>
+  <div class="panel mt-4 overflow-x-auto">
+    <table class="w-full min-w-[760px] text-left text-sm">
+      <thead class="border-b border-slate-200 text-xs font-semibold text-slate-500">
+        <tr><th class="px-4 py-3">Cohort</th><th class="px-4 py-3">Entry</th><th class="px-4 py-3">Seats</th><th class="px-4 py-3">Students</th><th class="px-4 py-3">In review</th><th class="px-4 py-3">Waitlist</th><th class="px-4 py-3"></th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% rows.forEach(function (r) { const c = r.cohort; %>
+        <tr>
+          <td class="px-4 py-3"><a class="font-semibold text-ink hover:text-brand" href="/admin/cohorts/<%= c.id %>"><%= c.name %></a><p class="mt-0.5"><span class="badge <%= labels.cohort[c.status].tone %>"><%= labels.cohort[c.status].text %></span></p></td>
+          <td class="px-4 py-3 text-slate-600"><%= labels.mode[c.enrollmentMode] %></td>
+          <td class="px-4 py-3"><%= c.seats ? (r.left === null ? c.seats : (c.seats - r.left) + ' of ' + c.seats) : 'No limit' %></td>
+          <td class="px-4 py-3"><%= r.counts.enr.active || 0 %></td>
+          <td class="px-4 py-3"><%= r.counts.apps.in_review || 0 %></td>
+          <td class="px-4 py-3"><%= r.counts.apps.waitlisted || 0 %></td>
+          <td class="px-4 py-3 text-right"><a class="btn btn-ghost btn-sm" href="/admin/cohorts/<%= c.id %>">Manage</a></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+  <% if (questionCount === 0 && rows.some(function (r) { return r.cohort.enrollmentMode === 'application'; })) { %>
+  <p class="mt-3 flex gap-2 text-sm text-amber-800"><i class="fa-solid fa-triangle-exclamation mt-0.5"></i><span>There is no application quiz yet, so every applicant will wait for a manual review. <% if (canP('cohorts.manage')) { %><a class="font-semibold underline" href="/admin/programs/<%= program.id %>/quiz">Add questions</a><% } %></span></p>
+  <% } %>
+</section>
+
+<section class="panel mt-8 p-6">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="font-bold text-ink">Team</h2>
+    <% if (canP('staff.manage')) { %><a class="text-sm font-semibold text-brand hover:underline" href="/admin/programs/<%= program.id %>/team">Manage team</a><% } %>
+  </div>
+  <% if (!staff.length) { %>
+    <p class="mt-3 text-sm text-slate-600">Nobody is assigned yet. Add a manager so you do not have to run this program yourself.</p>
+  <% } else { %>
+  <ul class="mt-3 divide-y divide-slate-100 text-sm">
+    <% staff.forEach(function (s) { %><li class="flex items-center justify-between gap-3 py-2"><span class="font-semibold text-ink"><%= s.User.name %></span><span class="text-slate-600"><%= s.Role.name %></span></li><% }) %>
+  </ul>
+  <% } %>
+</section>
+<%- include('../../partials/admin-bottom') %>

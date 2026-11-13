@@ -1,0 +1,11 @@
+<% if (typeof flash !== 'undefined' && flash.length) { %>
+<div class="fixed right-4 top-4 z-[60] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2" role="status" aria-live="polite">
+  <% flash.forEach(function (f) { %>
+  <div data-toast class="flex items-start gap-3 rounded-xl border bg-white px-4 py-3 shadow-lg <%= f.type === 'success' ? 'border-emerald-200' : (f.type === 'error' ? 'border-rose-200' : 'border-brand/30') %>">
+    <i class="fa-solid mt-0.5 <%= f.type === 'success' ? 'fa-circle-check text-emerald-600' : (f.type === 'error' ? 'fa-circle-exclamation text-rose-600' : 'fa-circle-info text-brand') %>"></i>
+    <p class="flex-1 text-sm leading-snug"><%= f.message %></p>
+    <button type="button" data-dismiss class="text-slate-400 hover:text-slate-700" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <% }) %>
+</div>
+<% } %>

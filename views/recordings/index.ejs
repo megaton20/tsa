@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<section class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+  <a href="/cohorts/<%= cohort.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= cohort.Program.title %> &middot; <%= cohort.name %></a>
+  <h1 class="mt-3 font-display text-3xl font-extrabold text-ink">Recordings</h1>
+  <p class="mt-1 text-slate-600">Catch up on a session or watch it again. Recordings stay available after the cohort ends.</p>
+
+  <% if (!recordings.length) { %>
+  <div class="panel mt-6 px-6 py-14 text-center">
+    <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand"><i class="fa-solid fa-circle-play"></i></span>
+    <p class="mt-3 font-semibold text-ink">No recordings yet</p>
+    <p class="mx-auto mt-1 max-w-sm text-sm text-slate-600">Your team adds a recording after a session. It will show up here.</p>
+  </div>
+  <% } else { %>
+  <ul class="mt-6 space-y-3">
+    <% recordings.forEach(function (r, i) { const v = seen[r.id]; %>
+    <li>
+      <a href="/recordings/<%= r.id %>" class="panel flex items-center gap-4 p-4 hover:border-brand/50">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-ink text-sun"><i class="fa-solid fa-play"></i></span>
+        <span class="min-w-0 flex-1">
+          <span class="block truncate font-bold text-ink"><%= r.title %></span>
+          <% if (r.description) { %><span class="block truncate text-sm text-slate-600"><%= r.description %></span><% } %>
+        </span>
+        <span class="badge <%= v ? 'bg-emerald-50 text-emerald-700' : 'bg-sun-soft text-amber-800' %>"><%= v ? 'Watched' : 'New' %></span>
+      </a>
+    </li>
+    <% }) %>
+  </ul>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

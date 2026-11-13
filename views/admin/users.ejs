@@ -1,0 +1,69 @@
+<%- include('../partials/admin-top') %>
+<h1 class="font-display text-3xl font-extrabold text-ink">Users</h1>
+<p class="mt-1 text-sm text-slate-600"><%= total %> <%= total === 1 ? 'person' : 'people' %><%= q || roleId ? ' match your filters' : ' in total' %>.</p>
+
+<form method="get" class="mt-5 flex flex-wrap gap-3">
+  <input class="field max-w-xs" name="q" placeholder="Search name or email" value="<%= q %>" aria-label="Search users">
+  <select class="field max-w-[12rem]" name="role" aria-label="Filter by role">
+    <option value="">All roles</option>
+    <% roles.forEach(function (r) { %><option value="<%= r.id %>" <%= roleId === r.id ? 'selected' : '' %>><%= r.name %></option><% }) %>
+  </select>
+  <button class="btn btn-ghost"><i class="fa-solid fa-magnifying-glass"></i>Filter</button>
+  <% if (q || roleId) { %><a href="/admin/users" class="btn btn-ghost">Clear</a><% } %>
+</form>
+
+<div class="panel mt-5 overflow-x-auto">
+  <table class="w-full min-w-[760px] text-left text-sm">
+    <thead class="border-b border-slate-200 text-xs font-semibold text-slate-500">
+      <tr><th class="px-4 py-3">Person</th><th class="px-4 py-3">Role</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Joined</th><th class="px-4 py-3 text-right">Actions</th></tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      <% users.forEach(function (u) { const self = u.id === actorUser.id; %>
+      <tr>
+        <td class="px-4 py-3">
+          <p class="font-semibold text-ink"><%= u.name %> <% if (self) { %><span class="text-xs font-normal text-slate-500">(you)</span><% } %></p>
+          <p class="text-xs text-slate-500"><%= u.email %></p>
+          <p class="mt-1 flex flex-wrap gap-1.5 text-[11px] font-semibold">
+            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600"><i class="<%= u.passwordHash ? 'fa-solid fa-key' : 'fa-brands fa-google' %> mr-1"></i><%= u.passwordHash ? 'Password' : 'Google' %><%= u.passwordHash && u.googleId ? ' + Google' : '' %></span>
+            <% if (!u.emailVerified) { %><span class="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700">Email not verified</span><% } %>
+          </p>
+        </td>
+        <td class="px-4 py-3">
+          <% if (can('users.manage') && !self) { %>
+          <form method="post" action="/admin/users/<%= u.id %>/role" class="flex items-center gap-2">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>">
+            <select class="field py-1.5 text-sm" name="roleId" aria-label="Role for <%= u.name %>">
+              <% assignable.forEach(function (r) { %><option value="<%= r.id %>" <%= u.roleId === r.id ? 'selected' : '' %>><%= r.name %></option><% }) %>
+            </select>
+            <button class="btn btn-ghost btn-sm">Save</button>
+          </form>
+          <% } else { %><span class="font-semibold text-ink"><%= u.Role ? u.Role.name : 'Student' %></span><% } %>
+        </td>
+        <td class="px-4 py-3"><span class="rounded-full px-2.5 py-0.5 text-xs font-bold <%= u.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' %>"><%= u.status === 'active' ? 'Active' : 'Suspended' %></span></td>
+        <td class="px-4 py-3 text-xs text-slate-500"><%= fmtDateTime(u.createdAt) %></td>
+        <td class="px-4 py-3">
+          <div class="flex justify-end gap-2">
+            <% if (can('users.impersonate') && !self && u.status === 'active') { %>
+            <form method="post" action="/admin/users/<%= u.id %>/impersonate"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>"><button class="btn btn-ghost btn-sm" title="View the site as this person"><i class="fa-solid fa-eye"></i>View as</button></form>
+            <% } %>
+            <% if (can('users.manage') && !self) { %>
+            <form method="post" action="/admin/users/<%= u.id %>/status" data-confirm="<%= u.status === 'active' ? 'Suspend ' + u.name + '? They will be signed out and blocked.' : 'Reactivate ' + u.name + '?' %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>"><button class="btn btn-sm <%= u.status === 'active' ? 'btn-danger' : 'btn-ghost' %>"><%= u.status === 'active' ? 'Suspend' : 'Reactivate' %></button></form>
+            <% } %>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+      <% if (!users.length) { %><tr><td colspan="5" class="px-4 py-10 text-center text-slate-500">No one matches those filters.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+
+<% if (pages > 1) { %>
+<nav class="mt-5 flex items-center justify-between text-sm" aria-label="Pagination">
+  <% const qs = function (p) { return '?page=' + p + (q ? '&q=' + encodeURIComponent(q) : '') + (roleId ? '&role=' + roleId : ''); }; %>
+  <% if (page > 1) { %><a class="btn btn-ghost btn-sm" href="<%= qs(page - 1) %>"><i class="fa-solid fa-chevron-left"></i>Previous</a><% } else { %><span></span><% } %>
+  <span class="text-slate-500">Page <%= page %> of <%= pages %></span>
+  <% if (page < pages) { %><a class="btn btn-ghost btn-sm" href="<%= qs(page + 1) %>">Next<i class="fa-solid fa-chevron-right"></i></a><% } else { %><span></span><% } %>
+</nav>
+<% } %>
+<%- include('../partials/admin-bottom') %>

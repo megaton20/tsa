@@ -1,0 +1,61 @@
+<%- include('../../partials/admin-top') %>
+<a href="<%= isNew ? '/admin/programs' : '/admin/programs/' + p.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= isNew ? 'Programs' : 'Back to program' %></a>
+<h1 class="mt-2 font-display text-3xl font-extrabold text-ink"><%= isNew ? 'New program' : 'Edit program' %></h1>
+
+<form method="post" action="<%= isNew ? '/admin/programs' : '/admin/programs/' + p.id %>" enctype="multipart/form-data" class="mt-6 max-w-3xl space-y-6" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../../partials/form-errors') %>
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Basics</h2>
+    <div>
+      <label class="label" for="title">Title</label>
+      <input class="field" id="title" name="title" maxlength="160" required value="<%= p.title || '' %>">
+      <% if (!isNew) { %><p class="hint">Page address: /programs/<%= p.slug %> (it does not change when you rename the program).</p><% } %>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="label" for="category">Category</label>
+        <input class="field" id="category" name="category" list="categories" maxlength="80" value="<%= p.category || '' %>">
+        <datalist id="categories"><% categories.forEach(function (c) { %><option value="<%= c %>"><% }) %></datalist>
+        <p class="hint">Programs in the same category are suggested together.</p>
+      </div>
+      <div>
+        <label class="label" for="tags">Tags</label>
+        <input class="field" id="tags" name="tags" placeholder="beginner, live, certificate" value="<%= (p.tags || []).join(', ') %>">
+      </div>
+    </div>
+    <div>
+      <label class="label" for="summary">One-line summary</label>
+      <textarea class="field" id="summary" name="summary" rows="2" maxlength="300"><%= p.summary || '' %></textarea>
+      <p class="hint">Shown on program cards.</p>
+    </div>
+    <div>
+      <label class="label" for="description">Description</label>
+      <textarea class="field" id="description" name="description" rows="9"><%= p.description || '' %></textarea>
+      <p class="hint">Leave a blank line between paragraphs.</p>
+    </div>
+  </section>
+
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Banner</h2>
+    <% if (p.bannerUrl) { %>
+    <img src="<%= p.bannerUrl %>" alt="Current banner" class="max-h-40 rounded-xl border border-slate-200">
+    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="removeBanner"> Remove the current banner</label>
+    <% } %>
+    <div>
+      <label class="label" for="image">Upload an image</label>
+      <input class="field" id="image" name="image" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+      <p class="hint">1600 x 700 pixels works well. Up to 5 MB.</p>
+    </div>
+    <div>
+      <label class="label" for="bannerUrlText">Or paste an image link</label>
+      <input class="field" id="bannerUrlText" name="bannerUrlText" placeholder="https://...">
+    </div>
+  </section>
+
+  <div class="flex gap-3">
+    <button class="btn btn-primary btn-lg"><%= isNew ? 'Create program' : 'Save changes' %></button>
+    <a href="<%= isNew ? '/admin/programs' : '/admin/programs/' + p.id %>" class="btn btn-ghost btn-lg">Cancel</a>
+  </div>
+</form>
+<%- include('../../partials/admin-bottom') %>

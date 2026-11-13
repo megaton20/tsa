@@ -1,0 +1,43 @@
+<%- include('../../partials/admin-top') %>
+<a href="/admin/programs/<%= program.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= program.title %></a>
+<h1 class="mt-2 font-display text-3xl font-extrabold text-ink">Application quiz</h1>
+<p class="mt-1 max-w-2xl text-sm text-slate-600">Used by every cohort of this program that takes applications. Applicants get a score out of 100 based on points. The pass mark and grace band are set on each cohort.</p>
+
+<div class="mt-6 space-y-3">
+  <% if (!questions.length) { %><div class="panel px-6 py-10 text-center text-sm text-slate-600">No questions yet. Without a quiz, every applicant waits for a manual review.</div><% } %>
+  <% questions.forEach(function (q, i) { %>
+  <details class="panel p-5">
+    <summary class="flex cursor-pointer items-center justify-between gap-4">
+      <span class="font-semibold text-ink"><span class="mr-2 text-brand"><%= i + 1 %>.</span><%= q.prompt %></span>
+      <span class="badge bg-slate-100 text-slate-600"><%= q.points %> <%= q.points === 1 ? 'point' : 'points' %></span>
+    </summary>
+    <form method="post" action="/admin/programs/<%= program.id %>/quiz/<%= q.id %>" class="mt-4 space-y-4">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div><label class="label" for="p-<%= q.id %>">Question</label><textarea class="field" id="p-<%= q.id %>" name="prompt" rows="2"><%= q.prompt %></textarea></div>
+      <div><label class="label" for="o-<%= q.id %>">Answer options (one per line)</label><textarea class="field" id="o-<%= q.id %>" name="options" rows="4"><%= q.options.join('\n') %></textarea></div>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div><label class="label" for="c-<%= q.id %>">Correct option (line number)</label><input class="field" id="c-<%= q.id %>" name="correct" type="number" min="1" max="6" value="<%= q.correctIndex + 1 %>"></div>
+        <div><label class="label" for="pt-<%= q.id %>">Points</label><input class="field" id="pt-<%= q.id %>" name="points" type="number" min="1" max="10" value="<%= q.points %>"></div>
+        <div><label class="label" for="so-<%= q.id %>">Order</label><input class="field" id="so-<%= q.id %>" name="sortOrder" type="number" value="<%= q.sortOrder %>"></div>
+      </div>
+      <div class="flex gap-2"><button class="btn btn-primary btn-sm">Save question</button></div>
+    </form>
+    <form method="post" action="/admin/programs/<%= program.id %>/quiz/<%= q.id %>/delete" class="mt-2" data-confirm="Delete this question?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i>Delete</button></form>
+  </details>
+  <% }) %>
+</div>
+
+<section class="panel mt-6 max-w-3xl p-6">
+  <h2 class="font-bold text-ink">Add a question</h2>
+  <form method="post" action="/admin/programs/<%= program.id %>/quiz" class="mt-4 space-y-4">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div><label class="label" for="prompt">Question</label><textarea class="field" id="prompt" name="prompt" rows="2" required></textarea></div>
+    <div><label class="label" for="options">Answer options (one per line, up to 6)</label><textarea class="field" id="options" name="options" rows="4" required placeholder="First option&#10;Second option&#10;Third option"></textarea></div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div><label class="label" for="correct">Correct option (line number)</label><input class="field" id="correct" name="correct" type="number" min="1" max="6" value="1" required></div>
+      <div><label class="label" for="points">Points</label><input class="field" id="points" name="points" type="number" min="1" max="10" value="1"></div>
+    </div>
+    <button class="btn btn-primary"><i class="fa-solid fa-plus"></i>Add question</button>
+  </form>
+</section>
+<%- include('../../partials/admin-bottom') %>

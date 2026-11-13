@@ -1,0 +1,8 @@
+<%- include('../partials/header') %>
+<section class="mx-auto max-w-xl px-4 py-24 text-center">
+  <span class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-rose-50 text-2xl text-rose-600"><i class="fa-solid fa-pause"></i></span>
+  <h1 class="mt-6 font-display text-3xl font-extrabold text-ink">Access to this cohort is paused</h1>
+  <p class="mt-3 text-slate-600">Your team has paused access for now. Contact support<%= settings.supportEmail ? ' at ' + settings.supportEmail : '' %> if you would like to know why.</p>
+  <a href="/dashboard" class="btn btn-primary mt-8">Back to dashboard</a>
+</section>
+<%- include('../partials/footer') %>

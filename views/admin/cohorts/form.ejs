@@ -1,0 +1,90 @@
+<%- include('../../partials/admin-top') %>
+<a href="<%= isNew ? '/admin/programs/' + program.id : '/admin/cohorts/' + c.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= isNew ? program.title : 'Back to cohort' %></a>
+<h1 class="mt-2 font-display text-3xl font-extrabold text-ink"><%= isNew ? 'New cohort' : 'Edit cohort' %></h1>
+<p class="mt-1 text-sm text-slate-600"><%= program.title %>. Dates are in Lagos time.</p>
+
+<form method="post" action="<%= isNew ? '/admin/programs/' + program.id + '/cohorts' : '/admin/cohorts/' + c.id %>" class="mt-6 max-w-3xl space-y-6" novalidate id="cohort-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../../partials/form-errors') %>
+
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Basics</h2>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div><label class="label" for="name">Cohort name</label><input class="field" id="name" name="name" maxlength="120" required placeholder="Cohort 1, January 2027" value="<%= c.name || '' %>"></div>
+      <div>
+        <label class="label" for="enrollmentMode">How people get in</label>
+        <select class="field" id="enrollmentMode" name="enrollmentMode">
+          <% [['application', 'By application (quiz, then an offer)'], ['free', 'Free enrollment'], ['pay', 'Paid enrollment (pay to unlock)'], ['community', 'Community only (join links)']].forEach(function (o) { %>
+          <option value="<%= o[0] %>" <%= c.enrollmentMode === o[0] ? 'selected' : '' %>><%= o[1] %></option>
+          <% }) %>
+        </select>
+      </div>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div><label class="label" for="startsAt">Starts</label><input class="field" id="startsAt" name="startsAt" type="datetime-local" value="<%= toLagosInput(c.startsAt) %>"></div>
+      <div><label class="label" for="endsAt">Ends</label><input class="field" id="endsAt" name="endsAt" type="datetime-local" value="<%= toLagosInput(c.endsAt) %>"></div>
+      <div><label class="label" for="seats">Seats</label><input class="field" id="seats" name="seats" type="number" min="1" placeholder="No limit" value="<%= c.seats || '' %>"></div>
+    </div>
+    <div><label class="label" for="sponsorName">Sponsored by <span class="font-normal text-slate-400">(optional)</span></label><input class="field" id="sponsorName" name="sponsorName" maxlength="120" value="<%= c.sponsorName || '' %>"></div>
+  </section>
+
+  <section class="panel space-y-4 p-6" data-mode-section="free pay application">
+    <h2 class="font-bold text-ink">Fee and scholarship</h2>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div><label class="label" for="fullFee">Full fee (naira)</label><input class="field" id="fullFee" name="fullFee" inputmode="decimal" value="<%= (c.fullFeeKobo || 0) / 100 %>"></div>
+      <div><label class="label" for="scholarshipPercent">Scholarship (% off)</label><input class="field" id="scholarshipPercent" name="scholarshipPercent" type="number" min="0" max="100" value="<%= c.scholarshipPercent || 0 %>"></div>
+    </div>
+    <p class="rounded-xl bg-chalk p-3 text-sm text-slate-700" id="fee-preview" aria-live="polite"></p>
+    <p class="hint">For application cohorts this is the seat fee a student pays after receiving an offer. For paid cohorts it unlocks enrollment. Zero means nothing to pay.</p>
+  </section>
+
+  <section class="panel space-y-4 p-6" data-mode-section="application">
+    <h2 class="font-bold text-ink">Selection rules</h2>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div><label class="label" for="passMark">Pass mark (%)</label><input class="field" id="passMark" name="passMark" type="number" min="1" max="100" value="<%= c.passMark || 70 %>"><p class="hint">At or above: offered a seat automatically.</p></div>
+      <div><label class="label" for="graceMark">Grace mark (%)</label><input class="field" id="graceMark" name="graceMark" type="number" min="0" max="100" value="<%= c.graceMark === undefined || c.graceMark === null ? 60 : c.graceMark %>"><p class="hint">Between grace and pass: the manager decides.</p></div>
+      <div><label class="label" for="offerWindowHours">Offer window (hours)</label><input class="field" id="offerWindowHours" name="offerWindowHours" type="number" min="1" max="720" value="<%= c.offerWindowHours || 72 %>"><p class="hint">Time to accept before the seat is released.</p></div>
+    </div>
+    <div><label class="label" for="applicationDeadline">Applications close <span class="font-normal text-slate-400">(optional)</span></label><input class="field max-w-xs" id="applicationDeadline" name="applicationDeadline" type="datetime-local" value="<%= toLagosInput(c.applicationDeadline) %>"></div>
+  </section>
+
+  <section class="panel space-y-4 p-6">
+    <h2 class="font-bold text-ink">Certificate and community</h2>
+    <div><label class="label" for="attendanceRequiredPercent">Attendance needed for a certificate (%)</label><input class="field max-w-xs" id="attendanceRequiredPercent" name="attendanceRequiredPercent" type="number" min="0" max="100" value="<%= c.attendanceRequiredPercent === undefined || c.attendanceRequiredPercent === null ? 75 : c.attendanceRequiredPercent %>"></div>
+    <label class="flex items-start gap-2.5 text-sm"><input class="mt-1" type="checkbox" name="autoIssueCertificates" <%= c.autoIssueCertificates === false ? '' : 'checked' %>><span><strong>Issue certificates automatically</strong> when the cohort is marked completed, to everyone who met the attendance rule.<br><span class="text-slate-500">Turn it off to review and issue them yourself.</span></span></label>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div><label class="label" for="whatsappUrl"><i class="fa-brands fa-whatsapp mr-1 text-emerald-600"></i>WhatsApp group link</label><input class="field" id="whatsappUrl" name="whatsappUrl" placeholder="https://chat.whatsapp.com/..." value="<%= c.whatsappUrl || '' %>"></div>
+      <div><label class="label" for="telegramUrl"><i class="fa-brands fa-telegram mr-1 text-sky-600"></i>Telegram link</label><input class="field" id="telegramUrl" name="telegramUrl" placeholder="https://t.me/..." value="<%= c.telegramUrl || '' %>"></div>
+    </div>
+    <p class="hint">Enrolled students see these links on their cohort page. Leave empty to use the site-wide links.</p>
+  </section>
+
+  <div class="flex gap-3">
+    <button class="btn btn-primary btn-lg"><%= isNew ? 'Create cohort' : 'Save changes' %></button>
+    <a href="<%= isNew ? '/admin/programs/' + program.id : '/admin/cohorts/' + c.id %>" class="btn btn-ghost btn-lg">Cancel</a>
+  </div>
+</form>
+
+<script>
+(function () {
+  var form = document.getElementById('cohort-form');
+  var mode = form.querySelector('#enrollmentMode');
+  var fee = form.querySelector('#fullFee');
+  var pct = form.querySelector('#scholarshipPercent');
+  var out = document.getElementById('fee-preview');
+  function naira(n) { return '\u20A6' + n.toLocaleString('en-NG', { maximumFractionDigits: 2 }); }
+  function paint() {
+    var m = mode.value;
+    form.querySelectorAll('[data-mode-section]').forEach(function (s) {
+      s.classList.toggle('hidden', s.getAttribute('data-mode-section').split(' ').indexOf(m) === -1);
+    });
+    var full = parseFloat(String(fee.value).replace(/,/g, '')) || 0;
+    var p = Math.min(Math.max(parseInt(pct.value, 10) || 0, 0), 100);
+    var due = Math.round(full * (100 - p)) / 100;
+    out.textContent = full === 0 ? 'Students pay nothing.' : 'Full fee ' + naira(full) + ', scholarship ' + p + '%. Students pay ' + (due === 0 ? 'nothing' : naira(due)) + '.';
+  }
+  [mode, fee, pct].forEach(function (el) { el.addEventListener('input', paint); });
+  paint();
+})();
+</script>
+<%- include('../../partials/admin-bottom') %>

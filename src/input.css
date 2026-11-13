@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :focus-visible {
+    @apply rounded-md outline outline-[3px] outline-offset-2 outline-brand;
+  }
+  dialog {
+    @apply m-auto;
+  }
+  dialog::backdrop {
+    background: rgb(10 59 42 / 0.6);
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn { @apply inline-flex cursor-pointer items-center gap-2 rounded-xl border border-transparent px-4 py-2.5 text-sm font-bold leading-tight transition-colors; }
+  .btn:disabled { @apply cursor-not-allowed opacity-50; }
+  .btn-primary { @apply bg-brand text-white hover:bg-brand-dark; }
+  .btn-sun { @apply bg-sun text-ink hover:bg-sun-dark; }
+  .btn-ghost { @apply border-slate-300 bg-white text-ink hover:border-brand/40 hover:bg-brand-soft; }
+  .btn-danger { @apply border-rose-200 bg-white text-rose-700 hover:bg-rose-50; }
+  .btn-whatsapp { @apply bg-[#128C4A] text-white hover:bg-[#0e6f3a]; }
+  .btn-lg { @apply px-6 py-3.5 text-base; }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+
+  /* Forms */
+  .label { @apply mb-1.5 block text-sm font-semibold text-slate-700; }
+  .field { @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-[0.95rem] text-slate-900 transition-colors; }
+  .field:focus { @apply border-brand outline-none ring-[3px] ring-brand/20; }
+  .hint { @apply mt-1.5 text-xs text-slate-500; }
+
+  /* Surfaces and labels */
+  .panel { @apply rounded-2xl border border-slate-200 bg-white; }
+  .badge { @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[0.72rem] font-bold leading-snug; }
+
+  /* Admin sidebar */
+  .admin-link { @apply flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-emerald-100/80 hover:bg-white/10 hover:text-white; }
+  .admin-link.is-active { @apply bg-white/15 text-white; }
+}
+
+/* Hero slider progress rail */
+@keyframes tsa-fill { from { width: 0; } to { width: 100%; } }
+.tsa-rail [data-tab] [data-bar] { display: block; height: 100%; width: 0; background: #0F7A4F; }
+.tsa-rail [data-tab].is-active [data-bar] { width: 100%; }
+
+/* FAQ accordion */
+details.faq summary { list-style: none; cursor: pointer; }
+details.faq summary::-webkit-details-marker { display: none; }
+details.faq summary .fa-plus { transition: transform 0.2s; }
+details.faq[open] summary .fa-plus { transform: rotate(45deg); }
+
+/* Printable certificate */
+@media print {
+  @page { size: A4 landscape; margin: 0; }
+  body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .no-print { display: none !important; }
+  .print-sheet { box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; width: 297mm !important; height: 210mm !important; max-width: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

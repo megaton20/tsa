@@ -1,0 +1,32 @@
+# Render blueprint. Create the Postgres database in the dashboard (or add it here), then set DATABASE_URL.
+services:
+  - type: web
+    name: true-series-academy
+    runtime: node
+    plan: free
+    buildCommand: npm install          # postinstall also compiles the Tailwind stylesheet
+    startCommand: npm start
+    healthCheckPath: /ping
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_SSL
+        value: "true"
+      - key: APP_URL
+        sync: false                    # e.g. https://true-series-academy.onrender.com
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SUPERADMIN_EMAIL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: MAIL_FROM_EMAIL
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false

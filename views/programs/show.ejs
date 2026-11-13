@@ -1,0 +1,104 @@
+<%- include('../partials/header') %>
+<% if (preview) { %>
+<div class="bg-amber-50 px-4 py-2 text-center text-sm font-semibold text-amber-800"><i class="fa-solid fa-eye mr-1"></i>Preview: this program is <%= program.status %> and only your team can see this page.</div>
+<% } %>
+<section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+  <a href="/programs" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i>All programs</a>
+
+  <div class="mt-4 overflow-hidden rounded-3xl bg-ink">
+    <% if (program.bannerUrl) { %>
+      <img src="<%= program.bannerUrl %>" alt="" class="aspect-[16/9] w-full object-cover sm:aspect-[21/8]">
+    <% } else { %>
+      <div class="grid aspect-[16/9] place-items-center bg-gradient-to-br from-ink via-[#0E5A3C] to-brand text-6xl text-white/25 sm:aspect-[21/8]"><i class="fa-solid fa-graduation-cap"></i></div>
+    <% } %>
+  </div>
+
+  <div class="mt-8 grid gap-10 lg:grid-cols-5">
+    <div class="lg:col-span-3">
+      <% if (program.category) { %><p class="text-sm font-semibold text-brand"><%= program.category %></p><% } %>
+      <h1 class="mt-1 font-display text-4xl font-extrabold leading-tight text-ink"><%= program.title %></h1>
+      <% if (program.summary) { %><p class="mt-3 text-lg leading-relaxed text-slate-600"><%= program.summary %></p><% } %>
+      <% if (program.description) { %>
+      <div class="mt-6 space-y-4 leading-relaxed text-slate-700">
+        <% program.description.split(/\n{2,}/).forEach(function (para) { %><p class="whitespace-pre-line"><%= para %></p><% }) %>
+      </div>
+      <% } %>
+      <% if (program.tags && program.tags.length) { %>
+      <ul class="mt-6 flex flex-wrap gap-2"><% program.tags.forEach(function (t) { %><li class="badge bg-slate-100 text-slate-600"><%= t %></li><% }) %></ul>
+      <% } %>
+    </div>
+
+    <aside class="lg:col-span-2">
+      <div class="space-y-4 lg:sticky lg:top-24">
+        <h2 class="font-display text-2xl font-extrabold text-ink">Cohorts</h2>
+        <% if (!views.length) { %>
+          <div class="panel p-6 text-sm text-slate-600">No cohort is scheduled yet. Join the community to hear when one opens.</div>
+        <% } %>
+        <% views.forEach(function (v) { const c = v.cohort; const cta = v.cta; %>
+        <article class="panel p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-bold text-ink"><%= c.name %></h3>
+            <span class="badge <%= labels.cohort[c.status].tone %>"><%= labels.cohort[c.status].text %></span>
+          </div>
+          <p class="mt-1 text-sm text-slate-600"><%= labels.mode[c.enrollmentMode] %><%= c.sponsorName ? ' \u00b7 Sponsored by ' + c.sponsorName : '' %></p>
+
+          <dl class="mt-4 space-y-2 text-sm">
+            <% if (c.startsAt) { %><div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-500">Dates</dt><dd class="font-semibold text-ink"><%= fmtDate(c.startsAt) %><%= c.endsAt ? ' to ' + fmtDate(c.endsAt) : '' %></dd></div><% } %>
+            <% if (c.enrollmentMode === 'application' && c.applicationDeadline) { %><div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-500">Apply by</dt><dd class="font-semibold text-ink"><%= fmtDateTime(c.applicationDeadline) %></dd></div><% } %>
+            <% if (c.enrollmentMode !== 'community' && c.seats) { %><div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-500">Seats</dt><dd class="font-semibold text-ink"><%= v.left === null ? c.seats : v.left + ' of ' + c.seats + ' left' %></dd></div><% } %>
+          </dl>
+
+          <% if (c.enrollmentMode !== 'community') { %>
+          <div class="mt-4 rounded-xl bg-chalk p-4 text-sm">
+            <% if (c.enrollmentMode === 'free' || c.fullFeeKobo === 0) { %>
+              <p class="font-bold text-ink">Free</p>
+            <% } else if (c.scholarshipPercent > 0) { %>
+              <p class="flex flex-wrap items-center gap-2"><s class="text-slate-400"><%= naira(c.fullFeeKobo) %></s><span class="badge bg-emerald-50 text-emerald-700"><%= c.scholarshipPercent %>% scholarship</span></p>
+              <p class="mt-1 font-bold text-ink">
+                <% if (c.enrollmentMode === 'application') { %><%= v.payable ? 'Seat fee after your offer: ' + naira(v.payable) : 'No fee after your offer' %>
+                <% } else { %><%= v.payable ? 'You pay ' + naira(v.payable) : 'You pay nothing' %><% } %>
+              </p>
+            <% } else { %>
+              <p class="font-bold text-ink"><%= naira(c.fullFeeKobo) %></p>
+            <% } %>
+          </div>
+          <% } %>
+
+          <% if (cta) { %>
+          <div class="mt-4">
+            <% if (cta.type === 'link') { %>
+              <% if (cta.badge) { %><p class="mb-2 text-sm text-slate-600">Your application: <span class="badge <%= labels.application[cta.badge].tone %>"><%= labels.application[cta.badge].text %></span></p><% } %>
+              <a href="<%= cta.href %>" class="btn btn-primary w-full justify-center"><i class="fa-solid <%= cta.icon || 'fa-arrow-right' %>"></i><%= cta.label %></a>
+            <% } else if (cta.type === 'post') { %>
+              <form method="post" action="<%= cta.action %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-primary w-full justify-center"><i class="fa-solid <%= cta.icon %>"></i><%= cta.label %></button></form>
+            <% } else if (cta.type === 'signin') { %>
+              <a href="/login?next=<%= encodeURIComponent('/programs/' + program.slug) %>" class="btn btn-primary w-full justify-center"><i class="fa-solid fa-right-to-bracket"></i><%= cta.label %></a>
+              <p class="mt-2 text-center text-xs text-slate-500">New here? <a class="font-semibold text-brand hover:underline" href="/register?next=<%= encodeURIComponent('/programs/' + program.slug) %>">Create an account</a></p>
+            <% } else if (cta.type === 'community') { %>
+              <% const wa = c.whatsappUrl || settings.whatsappGroupUrl || settings.whatsappChannelUrl; const tg = c.telegramUrl || settings.telegramUrl; %>
+              <div class="grid gap-2">
+                <% if (wa) { %><a class="btn btn-whatsapp justify-center" href="<%= wa %>" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i>Join on WhatsApp</a><% } %>
+                <% if (tg) { %><a class="btn btn-ghost justify-center" href="<%= tg %>" target="_blank" rel="noopener"><i class="fa-brands fa-telegram"></i>Join on Telegram</a><% } %>
+                <% if (!wa && !tg) { %><p class="text-sm text-slate-600">The join link will be added soon.</p><% } %>
+              </div>
+            <% } else { %>
+              <p class="flex gap-2 text-sm <%= cta.tone === 'warn' ? 'text-rose-700' : 'text-slate-600' %>"><i class="fa-solid fa-circle-info mt-0.5"></i><span><%= cta.text %></span></p>
+            <% } %>
+          </div>
+          <% } %>
+        </article>
+        <% }) %>
+      </div>
+    </aside>
+  </div>
+
+  <% if (related.length) { %>
+  <div class="mt-16">
+    <h2 class="font-display text-2xl font-extrabold text-ink">More programs to look at</h2>
+    <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <% related.forEach(function (item) { %><%- include('../partials/program-card', { item: item }) %><% }) %>
+    </div>
+  </div>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

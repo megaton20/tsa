@@ -1,0 +1,16 @@
+<%- include('../partials/auth-top') %>
+<h1 class="font-display text-3xl font-extrabold text-ink">Reset your password</h1>
+<p class="mt-1 text-sm text-slate-600">Enter your email and we will send you a link to choose a new password.</p>
+<div class="mt-6">
+  <%- include('../partials/form-errors') %>
+  <form method="post" action="/forgot-password" class="space-y-4" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div>
+      <label class="label" for="email">Email</label>
+      <input class="field" id="email" name="email" type="email" autocomplete="email" required>
+    </div>
+    <button class="btn btn-primary w-full justify-center py-3">Send reset link</button>
+  </form>
+  <p class="mt-6 text-center text-sm text-slate-600"><a class="font-semibold text-brand hover:underline" href="/login">Back to sign in</a></p>
+</div>
+<%- include('../partials/auth-bottom') %>

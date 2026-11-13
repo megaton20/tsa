@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title><%= typeof title !== 'undefined' && title ? title + ' | ' : '' %><%= appName %></title>
+  <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'Cohort-based programs with live sessions, community and certificates.' %>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <% if (css.built) { %>
+  <link rel="stylesheet" href="/css/tailwind.css?v=<%= css.version %>">
+  <% } else { %>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = <%- css.configJson %>;</script>
+  <style type="text/tailwindcss"><%- css.inline %></style>
+  <% } %>
+</head>
+<body class="flex min-h-screen flex-col bg-chalk font-sans text-slate-800 antialiased" <%= currentUser ? "data-signed-in" : "" %>>
+  <a href="#main" class="sr-only rounded-lg bg-white px-4 py-2 text-sm font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100]">Skip to content</a>
+  <% if (typeof isImpersonating !== 'undefined' && isImpersonating) { %>
+  <div class="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-3 bg-sun px-4 py-2 text-sm font-semibold text-ink">
+    <span><i class="fa-solid fa-eye mr-1"></i>Viewing as <%= currentUser.name %> (<%= currentUser.Role ? currentUser.Role.name : 'Student' %>)</span>
+    <form method="post" action="/impersonate/stop">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="rounded-lg bg-ink px-3 py-1 text-xs font-bold text-white hover:bg-brand-dark">Stop viewing as</button>
+    </form>
+  </div>
+  <% } %>
+  <% if (typeof bare === 'undefined' || !bare) { %><%- include('nav') %><% } %>
+  <%- include('flash') %>
+  <main id="main" class="flex-1">

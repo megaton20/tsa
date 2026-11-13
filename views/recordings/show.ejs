@@ -1,0 +1,29 @@
+<%- include('../partials/header') %>
+<section class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+  <a href="/cohorts/<%= cohort.id %>/recordings" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i>All recordings</a>
+  <h1 class="mt-3 font-display text-3xl font-extrabold leading-tight text-ink"><%= recording.title %></h1>
+  <p class="mt-1 text-sm text-slate-600"><%= cohort.Program.title %> &middot; <%= cohort.name %></p>
+
+  <div class="mt-6 overflow-hidden rounded-2xl bg-ink shadow-lg">
+    <iframe class="aspect-video w-full" src="<%= embed %>" title="<%= recording.title %>" loading="lazy"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+      referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+    <% if (prev) { %><a class="btn btn-ghost btn-sm" href="/recordings/<%= prev.id %>"><i class="fa-solid fa-chevron-left"></i>Previous</a><% } else { %><span></span><% } %>
+    <% if (next) { %><a class="btn btn-primary btn-sm" href="/recordings/<%= next.id %>">Next recording<i class="fa-solid fa-chevron-right"></i></a><% } %>
+  </div>
+
+  <% if (recording.description) { %><p class="mt-6 whitespace-pre-line leading-relaxed text-slate-700"><%= recording.description %></p><% } %>
+
+  <% if (all.length > 1) { %>
+  <h2 class="mt-10 font-bold text-ink">In this cohort</h2>
+  <ul class="mt-3 divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white">
+    <% all.forEach(function (r) { %>
+    <li><a class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-chalk <%= r.id === recording.id ? 'font-bold text-brand' : 'text-ink' %>" href="/recordings/<%= r.id %>"><i class="fa-solid <%= r.id === recording.id ? 'fa-circle-play' : 'fa-play' %> w-4 text-center"></i><%= r.title %></a></li>
+    <% }) %>
+  </ul>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

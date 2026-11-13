@@ -1,0 +1,47 @@
+<%- include('../partials/admin-top') %>
+<div class="flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="font-display text-3xl font-extrabold text-ink">Homepage banners</h1>
+    <p class="mt-1 text-sm text-slate-600">Each banner is one slide in the homepage hero. Lowest order shows first.</p>
+  </div>
+  <a href="/admin/slides/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i>New banner</a>
+</div>
+
+<% if (!slides.length) { %>
+<div class="panel mt-6 px-6 py-14 text-center">
+  <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand"><i class="fa-solid fa-images"></i></span>
+  <p class="mt-3 font-semibold text-ink">No banners yet</p>
+  <p class="mx-auto mt-1 max-w-sm text-sm text-slate-600">Until you add one, visitors see the default welcome panel.</p>
+  <a href="/admin/slides/new" class="btn btn-primary mt-5">Add the first banner</a>
+</div>
+<% } else { %>
+<ul class="mt-6 space-y-3">
+  <% slides.forEach(function (s) {
+       const now = new Date();
+       let status = 'Live', tone = 'bg-emerald-50 text-emerald-700';
+       if (!s.isActive) { status = 'Hidden'; tone = 'bg-slate-100 text-slate-600'; }
+       else if (s.startsAt && s.startsAt > now) { status = 'Scheduled'; tone = 'bg-amber-50 text-amber-700'; }
+       else if (s.endsAt && s.endsAt < now) { status = 'Ended'; tone = 'bg-rose-50 text-rose-700'; }
+  %>
+  <li class="panel flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+    <div class="h-24 w-full shrink-0 overflow-hidden rounded-xl bg-ink sm:w-48">
+      <% if (s.imageUrl) { %><img src="<%= s.imageUrl %>" alt="" class="h-full w-full object-cover"><% } else { %><div class="grid h-full place-items-center text-2xl text-white/40"><i class="fa-solid fa-image"></i></div><% } %>
+    </div>
+    <div class="min-w-0 flex-1">
+      <div class="flex flex-wrap items-center gap-2">
+        <h2 class="truncate font-bold text-ink"><%= s.title %></h2>
+        <span class="rounded-full px-2.5 py-0.5 text-xs font-bold <%= tone %>"><%= status %></span>
+      </div>
+      <p class="mt-1 text-sm text-slate-600">Order <%= s.sortOrder %> &middot; Button: <%= s.ctaUrl ? (s.ctaLabel || 'Learn more') + ' (' + s.ctaType + ')' : 'none' %></p>
+      <% if (s.startsAt || s.endsAt) { %><p class="mt-0.5 text-xs text-slate-500"><%= s.startsAt ? 'From ' + fmtDateTime(s.startsAt) : '' %> <%= s.endsAt ? 'until ' + fmtDateTime(s.endsAt) : '' %></p><% } %>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="/admin/slides/<%= s.id %>/edit" class="btn btn-ghost btn-sm"><i class="fa-solid fa-pen"></i>Edit</a>
+      <form method="post" action="/admin/slides/<%= s.id %>/toggle"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-ghost btn-sm"><i class="fa-solid <%= s.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i><%= s.isActive ? 'Hide' : 'Show' %></button></form>
+      <form method="post" action="/admin/slides/<%= s.id %>/delete" data-confirm="Delete this banner? This cannot be undone."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i>Delete</button></form>
+    </div>
+  </li>
+  <% }) %>
+</ul>
+<% } %>
+<%- include('../partials/admin-bottom') %>

@@ -1,0 +1,59 @@
+<%- include('../../partials/admin-top') %>
+<a href="/admin/cohorts/<%= cohort.id %>" class="text-sm font-semibold text-brand hover:underline"><i class="fa-solid fa-chevron-left mr-1"></i><%= cohort.name %></a>
+<div class="mt-2 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="font-display text-3xl font-extrabold text-ink">Certificates</h1>
+    <p class="mt-1 text-sm text-slate-600">A certificate needs <strong><%= cohort.attendanceRequiredPercent %>%</strong> attendance across the <%= held %> session<%= held === 1 ? '' : 's' %> held so far. <%= issuedCount %> issued.</p>
+  </div>
+  <% if (cohort.status === 'completed') { %>
+  <form method="post" action="/admin/cohorts/<%= cohort.id %>/certificates/issue-all" data-confirm="Issue a certificate to every student who met the attendance rule?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-primary"><i class="fa-solid fa-award"></i>Issue to everyone eligible</button></form>
+  <% } %>
+</div>
+
+<% if (cohort.status !== 'completed') { %>
+<p class="mt-4 flex gap-2 rounded-xl bg-amber-50 p-4 text-sm text-amber-900"><i class="fa-solid fa-circle-info mt-0.5"></i><span>Certificates are issued once the cohort is marked completed. <%= cohort.autoIssueCertificates ? 'They go out automatically to everyone who met the rule.' : 'Automatic issuing is switched off for this cohort, so you will issue them here.' %> Marking the cohort completed is on the cohort page.</span></p>
+<% } %>
+
+<div class="panel mt-6 overflow-x-auto">
+  <table class="w-full min-w-[760px] text-left text-sm">
+    <thead class="border-b border-slate-200 text-xs font-semibold text-slate-500"><tr><th class="px-4 py-3">Student</th><th class="px-4 py-3">Attendance</th><th class="px-4 py-3">Certificate</th><th class="px-4 py-3 text-right">Actions</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">
+      <% rows.forEach(function (r) { %>
+      <tr>
+        <td class="px-4 py-3"><p class="font-semibold text-ink"><%= r.user.name %></p><p class="text-xs text-slate-500"><%= r.user.email %></p><% if (r.enrollment.status === 'suspended') { %><span class="badge mt-1 bg-rose-50 text-rose-700">Suspended</span><% } %></td>
+        <td class="px-4 py-3">
+          <% if (r.percent === null) { %><span class="text-slate-400">No sessions held</span>
+          <% } else { %><span class="badge <%= r.eligible ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' %>"><%= r.percent %>% (<%= r.attended %>/<%= held %>)</span><% } %>
+        </td>
+        <td class="px-4 py-3">
+          <% if (r.cert) { %>
+            <p class="font-mono text-xs font-semibold text-ink"><%= r.cert.code %></p>
+            <% if (r.cert.revokedAt) { %><span class="badge bg-rose-50 text-rose-700">Withdrawn</span><p class="mt-1 text-xs text-slate-500"><%= r.cert.revokedReason %></p>
+            <% } else { %><span class="badge bg-emerald-50 text-emerald-700">Issued <%= fmtDate(r.cert.issuedAt) %></span><% } %>
+            <% if (r.cert.issueNote) { %><p class="mt-1 text-xs text-slate-500">Override: <%= r.cert.issueNote %></p><% } %>
+          <% } else { %><span class="text-slate-400">None</span><% } %>
+        </td>
+        <td class="px-4 py-3">
+          <div class="flex flex-col items-end gap-2">
+            <% if (r.cert && !r.cert.revokedAt) { %>
+            <details class="w-56 text-left"><summary class="btn btn-ghost btn-sm cursor-pointer">Withdraw</summary>
+              <form method="post" action="/admin/cohorts/<%= cohort.id %>/certificates/<%= r.cert.id %>/revoke" class="mt-2 space-y-2"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input class="field py-1.5 text-sm" name="reason" maxlength="255" placeholder="Reason" aria-label="Reason" required><button class="btn btn-danger btn-sm">Withdraw</button></form>
+            </details>
+            <% } else if (r.cert && r.cert.revokedAt) { %>
+            <form method="post" action="/admin/cohorts/<%= cohort.id %>/certificates/<%= r.cert.id %>/restore"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-ghost btn-sm">Restore</button></form>
+            <% } else if (cohort.status === 'completed' && ['active', 'completed'].indexOf(r.enrollment.status) > -1) { %>
+            <details class="w-56 text-left"><summary class="btn <%= r.eligible ? 'btn-primary' : 'btn-ghost' %> btn-sm cursor-pointer"><%= r.eligible ? 'Issue' : 'Issue anyway' %></summary>
+              <form method="post" action="/admin/cohorts/<%= cohort.id %>/certificates/issue" class="mt-2 space-y-2"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="userId" value="<%= r.user.id %>">
+                <% if (!r.eligible) { %><input class="field py-1.5 text-sm" name="note" maxlength="255" placeholder="Reason for the exception" aria-label="Reason" required><% } %>
+                <button class="btn btn-primary btn-sm">Issue certificate</button></form>
+            </details>
+            <% } %>
+          </div>
+        </td>
+      </tr>
+      <% }) %>
+      <% if (!rows.length) { %><tr><td colspan="4" class="px-4 py-10 text-center text-slate-500">No students enrolled.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+<%- include('../../partials/admin-bottom') %>
